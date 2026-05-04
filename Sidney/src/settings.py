@@ -1,0 +1,21 @@
+#screen settings
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
+GAME_WIDTH = 640
+GAME_HEIGHT = 360
+FPS = 60
+
+#Fullscreen Toggle 
+
+FULLSCREEN = False
+
+#colors (R, G, B)
+
+COLOR_BG = (30, 30, 30)
+COLOR_WHITE = (255, 255, 255)
+COLOR_RED = (200, 50, 50)
+COLOR_GREEN = (50, 200, 50)
+COLOR_BLUE = (50, 50, 200)
+
+#Player Settings
+PLAYER_SPEED = 5
