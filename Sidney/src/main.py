@@ -1,7 +1,7 @@
 import pygame
 import sys
 
-from Sidney.src.ui_manager import UIManager
+from game.ui_manager import UIManager
 from game.game_state import GameState
 from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FULLSCREEN, COLOR_BG, FPS
 

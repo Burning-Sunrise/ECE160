@@ -25,7 +25,17 @@ class InvestmentPopup:
         self.btn_ok = pygame.Rect(self.rect.x + 40, self.rect.y + 120, 100, 32)
         self.btn_cancel = pygame.Rect(self.rect.x + 180, self.rect.y + 120, 100, 32)
 
-    def handle_event(self, event):
+    def handle_click(self, mouse_pos):
+        """Handle scaled mouse clicks only."""
+        if self.btn_ok.collidepoint(mouse_pos):
+            return self._validate()
+        if self.btn_cancel.collidepoint(mouse_pos):
+            return "cancel"
+        return None
+
+    def handle_event(self, event, scaled_pos=None):
+        """Keyboard input + scaled mouse input."""
+        # Keyboard input
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
                 self.input_text = self.input_text[:-1]
@@ -34,11 +44,10 @@ class InvestmentPopup:
             elif event.unicode.isdigit():
                 self.input_text += event.unicode
 
+        # Mouse input (scaled)
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            if self.btn_ok.collidepoint(event.pos):
-                return self._validate()
-            if self.btn_cancel.collidepoint(event.pos):
-                return "cancel"
+            if scaled_pos is not None:
+                return self.handle_click(scaled_pos)
 
         return None
 

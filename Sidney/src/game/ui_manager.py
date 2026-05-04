@@ -2,8 +2,6 @@ import os, sys
 print("CWD:", os.getcwd())
 print("PATH:", sys.path)
 
-
-
 import pygame
 from ui.pause import PauseMenu
 from ui.menu import SettingsMenu
@@ -22,6 +20,9 @@ class UIManager:
         self.screen = screen
         self.font = font
 
+        # GameState reference (set in update)
+        self.game_state = None
+
         self.state = None
         self.paused = False
 
@@ -31,18 +32,22 @@ class UIManager:
         self.pause_button_rect = pygame.Rect(0, 0, 32, 32)
         self._position_pause_button()
 
+        # HUD values
         self.money = 0
         self.day = 1
         self.actions_left = 3
         self.mood = 0
         self.max_mood = 100
 
+        # Investment popup
         self.invest_popup = None
         self.invest_amount = None
 
+        # Prompt text
         self.prompt_text = None
         self.prompt_pos = None
 
+        # Screens
         self.screens = {
             "TRADING_FLOOR": TradingFloorScreen(),
             "TRADING_SIM": TradingSimScreen(),
@@ -53,6 +58,7 @@ class UIManager:
         self.current_screen = "TRADING_FLOOR"
         self.confirm_trade = ConfirmTradePopup(self.screen, self.font)
 
+        # Give each screen access to UIManager
         for screen in self.screens.values():
             screen.ui = self
 
@@ -71,6 +77,18 @@ class UIManager:
         self.pause_button_rect.topright = (w - 8, 8)
 
     # ------------------------------------------------
+    # Mouse Scaling Helper
+    # ------------------------------------------------
+    def _scale_mouse(self, pos):
+        window_w, window_h = pygame.display.get_surface().get_size()
+        game_w, game_h = self.screen.get_size()
+
+        scale_x = game_w / window_w
+        scale_y = game_h / window_h
+
+        return (pos[0] * scale_x, pos[1] * scale_y)
+
+    # ------------------------------------------------
     # Event Handling
     # ------------------------------------------------
     def handle_event(self, event):
@@ -79,25 +97,40 @@ class UIManager:
         # INVEST POPUP
         # -------------------------
         if self.state == "INVEST":
-            result = self.invest_popup.handle_event(event)
+
+            scaled_pos = None
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                scaled_pos = self._scale_mouse(event.pos)
+
+            # Always forward event
+            result = self.invest_popup.handle_event(event, scaled_pos)
 
             if isinstance(result, int):
                 self.invest_amount = result
-                self.screens["TRADING_SIM"].start(self.invest_amount)
+
+                # Deduct money
+                self.game_state.money -= result
+                self.money = self.game_state.money
+
+                # Start mini-game
+                self.screens["TRADING_SIM"].start(result)
                 self.change_screen("TRADING_SIM")
                 self.state = None
+                return
 
-            elif result == "cancel":
+            if result == "cancel":
                 self.state = None
+                return
 
-            return  # block all other input
+            return  # Block all other input
 
         # -------------------------
         # CONFIRM TRADE POPUP
         # -------------------------
         if self.state == "CONFIRM_TRADE":
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                action = self.confirm_trade.handle_click(event.pos)
+                scaled_pos = self._scale_mouse(event.pos)
+                action = self.confirm_trade.handle_click(scaled_pos)
 
                 if action == "yes":
                     self.invest_popup = InvestmentPopup(
@@ -115,7 +148,8 @@ class UIManager:
         # -------------------------
         if self.state == "PAUSED":
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                action = self.pause_menu.handle_click(event.pos)
+                scaled_pos = self._scale_mouse(event.pos)
+                action = self.pause_menu.handle_click(scaled_pos)
                 self._handle_pause_action(action)
             return
 
@@ -124,7 +158,8 @@ class UIManager:
         # -------------------------
         if self.state == "SETTINGS":
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                action = self.settings_menu.handle_click(event.pos)
+                scaled_pos = self._scale_mouse(event.pos)
+                action = self.settings_menu.handle_click(scaled_pos)
                 self._handle_settings_action(action)
             return
 
@@ -144,16 +179,10 @@ class UIManager:
     # Mouse Click Handling
     # ------------------------------------------------
     def _handle_mouse_click(self, mouse_pos):
-        window_w, window_h = pygame.display.get_surface().get_size()
-        game_w, game_h = self.screen.get_size()
-
-        scale_x = game_w / window_w
-        scale_y = game_h / window_h
-
-        mouse_pos = (mouse_pos[0] * scale_x, mouse_pos[1] * scale_y)
+        scaled = self._scale_mouse(mouse_pos)
 
         if self.state is None:
-            if self.pause_button_rect.collidepoint(mouse_pos):
+            if self.pause_button_rect.collidepoint(scaled):
                 self.toggle_pause()
 
     # ------------------------------------------------
@@ -200,12 +229,21 @@ class UIManager:
     # ------------------------------------------------
     def update(self, dt, game_state):
 
-        # Sync HUD values
+        # Store reference
+        self.game_state = game_state
+
+        # Sync HUD
         self.money = game_state.money
         self.day = game_state.day
         self.actions_left = game_state.max_trades_per_day - game_state.trades_today
         self.mood = game_state.stress
 
+        # ⭐ Always update TradingSimScreen
+        if self.current_screen == "TRADING_SIM":
+            self.screens["TRADING_SIM"].update(dt, game_state)
+            return
+
+        # Normal updates
         if self.state is None:
             self.screens[self.current_screen].update(dt, game_state)
 
@@ -244,67 +282,24 @@ class UIManager:
     # ------------------------------------------------
     # HUD Drawing
     # ------------------------------------------------
-    def _draw_hud(self, surface):
-        x = 20
-        y = 20
-
-        self.draw_mood_bar(surface, x, y, 200, 20, self.mood, self.max_mood)
-        y += 30
-
-        self.draw_money(surface, x, y, self.money)
-        y += 24
-
-        self.draw_day(surface, x, y, self.day)
-        y += 24
-
-        self.draw_actions_left(surface, x, y, self.actions_left)
-
-    def draw_mood_bar(self, surface, x, y, width, height, mood_value, max_mood):
-        pygame.draw.rect(surface, (0, 0, 0), (x, y, width, height), 3)
-
-        mood_value = max(0, min(max_mood, mood_value))
-        inner_width = width - 6
-        fill_width = int((mood_value / max_mood) * inner_width)
-
-        if mood_value < max_mood * 0.4:
-            color = (80, 200, 80)
-        elif mood_value < max_mood * 0.7:
-            color = (230, 200, 40)
-        else:
-            color = (200, 60, 60)
-
-        pygame.draw.rect(surface, color, (x + 3, y + 3, fill_width, height - 6))
-
-        label = self.font.render("Mood", False, (255, 255, 255))
-        surface.blit(label, (x + width + 8, y))
-
-    def draw_money(self, surface, x, y, money):
-        text = self.font.render(f"Money: ${money}", False, (255, 255, 255))
-        surface.blit(text, (x, y))
-
-    def draw_day(self, surface, x, y, day):
-        text = self.font.render(f"Day: {day}", False, (255, 255, 255))
-        surface.blit(text, (x, y))
-
-    def draw_actions_left(self, surface, x, y, actions_left):
-        text = self.font.render(f"Trades left: {actions_left}", False, (255, 255, 255))
-        surface.blit(text, (x, y))
-
-    # ------------------------------------------------
-    # Pause Button Drawing
-    # ------------------------------------------------
     def _draw_pause_button(self, surface):
-        pygame.draw.rect(surface, (40, 40, 40), self.pause_button_rect)
-        pygame.draw.rect(surface, (0, 0, 0), self.pause_button_rect, 2)
+        pygame.draw.rect(surface, (200, 200, 200), self.pause_button_rect)
+        pygame.draw.line(surface, (0, 0, 0),
+                         (self.pause_button_rect.x + 10, self.pause_button_rect.y + 8),
+                         (self.pause_button_rect.x + 10, self.pause_button_rect.y + 24), 3)
+        pygame.draw.line(surface, (0, 0, 0),
+                         (self.pause_button_rect.x + 20, self.pause_button_rect.y + 8),
+                         (self.pause_button_rect.x + 20, self.pause_button_rect.y + 24), 3)
 
-        bar_width = 6
-        bar_height = 16
-        gap = 4
+    def _draw_hud(self, surface):
+        money_surf = self.font.render(f"Money: ${self.money}", True, (255, 255, 255))
+        day_surf = self.font.render(f"Day: {self.day}", True, (255, 255, 255))
+        actions_surf = self.font.render(f"Trades Left: {self.actions_left}", True, (255, 255, 255))
+        mood_surf = self.font.render(f"Mood: {self.mood}/{self.max_mood}", True, (255, 255, 255))
 
-        x1 = self.pause_button_rect.x + 8
-        x2 = x1 + bar_width + gap
-        y = self.pause_button_rect.y + (self.pause_button_rect.height - bar_height) // 2
+        surface.blit(money_surf, (20, 20))
+        surface.blit(day_surf, (20, 50))
+        surface.blit(actions_surf, (20, 80))
+        surface.blit(mood_surf, (20, 110))
 
-        pygame.draw.rect(surface, (220, 220, 220), (x1, y, bar_width, bar_height))
-        pygame.draw.rect(surface, (220, 220, 220), (x2, y, bar_width, bar_height))
-#end of code
+

@@ -6,64 +6,62 @@ import random
 class TradingSimScreen:
     def __init__(self):
         self.ui = None
-        self.active = False
-        self.invest_amount = 0
+        self.investment_amount = 0
+        self.result_text = ""
         self.timer = 0
-        self.result_ready = False
-        self.win = False
+        self.state = "IDLE"  # IDLE → RUNNING → RESULT → EXIT
 
-    # Called by UIManager when entering this screen
     def start(self, amount):
-        self.invest_amount = amount
-        self.active = True
+        """Called by UIManager when the player enters the mini-game."""
+        self.investment_amount = amount
+        self.result_text = ""
         self.timer = 0
-        self.result_ready = False
-        self.win = False
+        self.state = "RUNNING"
 
     def handle_event(self, event):
-        # Later your teammate can add controls here
+        """UIManager requires this to exist, even if unused."""
         pass
 
     def update(self, dt, game_state):
-        if not self.active:
+        if self.state == "EXIT":
             return
 
-        # -----------------------------------------
-        # Placeholder minigame logic:
-        # After 2 seconds, randomly win or lose
-        # -----------------------------------------
-        self.timer += dt
-        if self.timer >= 2.0 and not self.result_ready:
-            self.result_ready = True
-            self.win = random.choice([True, False])
+        # Phase 1: simulate trading for 2 seconds
+        if self.state == "RUNNING":
+            self.timer += dt
 
-            # Apply win/loss to GameState
-            if self.win:
-                game_state.money += self.invest_amount
-            else:
-                game_state.money -= self.invest_amount
+            if self.timer >= 2000:
+                win = random.choice([True, False])
 
-            # Register the trade
-            outcome = game_state.register_trade()
+                if win:
+                    winnings = self.investment_amount * 2
+                    game_state.add_money(winnings)
+                    self.result_text = f"You WON! +${self.investment_amount}"
+                else:
+                    self.result_text = f"You LOST! -${self.investment_amount}"
 
-            # Decide next screen
-            if outcome == "DAY_OVER":
-                self.ui.change_screen("RECOVERY_ROOM")
-            else:
+                self.state = "RESULT"
+                self.timer = 0
+
+        # Phase 2: show result for 2 seconds, then exit
+        elif self.state == "RESULT":
+            self.timer += dt
+
+            if self.timer >= 2000:
+                self.state = "EXIT"
                 self.ui.change_screen("TRADING_FLOOR")
 
-            # Reset this screen
-            self.active = False
-
     def draw(self, surface):
-        surface.fill((40, 0, 0))
+        font = pygame.font.SysFont(None, 32)
 
-        font = self.ui.font
-
-        if not self.result_ready:
-            msg = f"Trading... Investing ${self.invest_amount}"
+        if self.state == "RUNNING":
+            msg = "Trading..."
         else:
-            msg = "WIN!" if self.win else "LOSS!"
+            msg = self.result_text
 
-        text = font.render(msg, True, (255, 255, 255))
-        surface.blit(text, (40, 40))
+        surf = font.render(msg, True, (255, 255, 255))
+        rect = surf.get_rect(center=(surface.get_width() // 2,
+                                     surface.get_height() // 2))
+        surface.blit(surf, rect)
+
+
