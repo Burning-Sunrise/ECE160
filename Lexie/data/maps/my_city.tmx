@@ -73,7 +73,7 @@
    </properties>
    <point/>
   </object>
-  <object id="389" name="Nodes" x="172.727" y="1042.42">
+  <object id="389" name="Nodes" x="196.727" y="1162.42">
    <properties>
     <property name="node_type" value="momentum"/>
     <property name="symbol" value="NVDA"/>
@@ -92,7 +92,7 @@
   <object id="395" name="Enemy" x="1454" y="1022">
    <point/>
   </object>
-  <object id="396" name="Enemy" x="480" y="1020">
+  <object id="396" name="Enemy" x="456" y="1132">
    <point/>
   </object>
   <object id="397" name="Enemy" x="734" y="1024">
@@ -133,7 +133,7 @@
   <object id="167" gid="1489" x="712" y="286" width="400" height="400"/>
   <object id="168" gid="1489" x="776" y="243.333" width="400" height="400"/>
   <object id="169" gid="1490" x="894" y="238.667" width="400" height="400"/>
-  <object id="170" gid="2147485142" x="1047" y="256" width="400" height="400"/>
+  <object id="170" gid="2147485142" x="1047" y="260" width="400" height="400"/>
   <object id="171" gid="1487" x="1182.67" y="293.333" width="368" height="366.667"/>
   <object id="172" gid="1487" x="1288.67" y="327.333" width="345.333" height="365.333"/>
   <object id="173" gid="1487" x="1377" y="384.333" width="352" height="366.667"/>
