@@ -35,6 +35,13 @@ class InvestmentPopup:
 
     def handle_event(self, event, scaled_pos=None):
         """Keyboard input + scaled mouse input."""
+
+        # Close popup if clicking outside
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if scaled_pos is not None:
+                if not self.rect.collidepoint(scaled_pos):
+                    return "cancel"
+
         # Keyboard input
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_BACKSPACE:
@@ -44,7 +51,7 @@ class InvestmentPopup:
             elif event.unicode.isdigit():
                 self.input_text += event.unicode
 
-        # Mouse input (scaled)
+        # Mouse input
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             if scaled_pos is not None:
                 return self.handle_click(scaled_pos)
@@ -53,13 +60,14 @@ class InvestmentPopup:
 
     def _validate(self):
         if self.input_text == "":
-            return None
+            return "invalid"
 
         amount = int(self.input_text)
 
         if 0 < amount <= self.max_amount:
             return amount
-        return None
+
+        return "invalid"
 
     def draw(self):
         pygame.draw.rect(self.surface, (30, 30, 30), self.rect)

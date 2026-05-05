@@ -15,14 +15,14 @@ class Boss(pygame.sprite.Sprite):
 
     def __init__(self, x, y, player):
         super().__init__()
-        self.player = player
+        self.player = player#(we need to use the player's location)
         self.scale = 5
-        self.size = 150  # 原始帧尺寸 (150x150)
+        self.size = 150  # the size for the initial frame (150x150)
 
-        # --- 1. 战斗属性 ---
+        #---stats---
         self.hp = 10
         self.max_hp = 10
-        self.is_invincible = False  # player.check_hit_boss 会读这个
+        self.is_invincible = False  # player.check_hit_boss(hitstun)
         self.has_hit_player = False  # 单次攻击只伤害玩家一次
 
         # --- 2. 状态/朝向/计时 ---
@@ -30,18 +30,18 @@ class Boss(pygame.sprite.Sprite):
         self.flip = True  # 玩家在左侧 -> 默认朝左
         self.start_time = pygame.time.get_ticks()
         self.last_attack_end = 0
-        self.pulse_spawned = False
-        self.pulse_recover_until = 0  # 脉冲消失后的额外硬直时间戳
+        self.pulse_spawned = False #（#这什么）
+        self.pulse_recover_until = 0  #（#看不懂）# 脉冲消失后的额外硬直时间戳
 
         # --- 3. 加载动画 ---
         self.frame_index = 0
-        self.animations = self.load_assets()
-        self.pulse_frames = self.load_pulse_assets()
+        self.animations = self.load_assets()#(这在干嘛)
+        self.pulse_frames = self.load_pulse_assets()#(这在干嘛)
 
         # --- 4. 碰撞箱 14x54 -> 70x270 ---
-        self.image = self.animations['idle'][0]
+        self.image = self.animations['idle'][0]#(这在干嘛)
         self.rect = pygame.Rect(0, 0, 16 * self.scale, 54 * self.scale)
-        self.rect.centerx = x
+        self.rect.centerx = x#(这在干嘛)
         self.rect.bottom = GROUND_Y  # 强制贴地，y 参数仅作语义保留
 
     # ----------------------------------------------------------
@@ -61,7 +61,7 @@ class Boss(pygame.sprite.Sprite):
             'death':  ("image/boss/boss_death/boss_death.png",       19, 3),
         }
 
-        all_anims = {}
+        all_anims = {}#(这在干嘛)
         for action, (path, count, cols) in asset_info.items():
             try:
                 sheet = pygame.image.load(path).convert_alpha()
@@ -83,7 +83,7 @@ class Boss(pygame.sprite.Sprite):
                 ]
         return all_anims
 
-    def load_pulse_assets(self):
+    def load_pulse_assets(self):#(这在干嘛)
         path = "image/boss/effects/pulse.png"
         try:
             sheet = pygame.image.load(path).convert_alpha()
@@ -103,7 +103,7 @@ class Boss(pygame.sprite.Sprite):
     # ----------------------------------------------------------
     # 主更新
     # ----------------------------------------------------------
-    def update(self, pulse_group):
+    def update(self, pulse_group):#(这在干嘛)
         if self.status == 'death':
             self.animate(pulse_group)
             return
@@ -111,7 +111,7 @@ class Boss(pygame.sprite.Sprite):
         now = pygame.time.get_ticks()
 
         # 1. 开局静止
-        if now - self.start_time < BOSS_INTRO_DELAY:
+        if now - self.start_time < BOSS_INTRO_DELAY:#(这在干嘛)
             self.status = 'idle'
             self.flip = self.player.rect.centerx < self.rect.centerx
             self.animate(pulse_group)
@@ -125,13 +125,13 @@ class Boss(pygame.sprite.Sprite):
         # 3. 各状态行为
         if self.status == 'idle':
             self.flip = self.player.rect.centerx < self.rect.centerx
-            # 冷却结束才决定下一次攻击
+            # 冷却结束才决定下一次攻击#(这在干嘛)
             if now - self.last_attack_end > BOSS_ATTACK_COOLDOWN \
                     and now > self.pulse_recover_until:
                 self.decide_attack()
 
         elif self.status == 'run':
-            self._chase(BOSS_RUN_SPEED)
+            self._chase(BOSS_RUN_SPEED)#(chase是什么函数啊)
 
         elif self.status == 'walk':
             self._chase(BOSS_WALK_SPEED)
@@ -192,7 +192,7 @@ class Boss(pygame.sprite.Sprite):
 
         elif choice == 'dash':
             # 瞬移到玩家正上方屏幕外
-            self.rect.centerx = self.player.rect.centerx
+            self.rect.centerx = self.player.rect.centerx#(chase是什么函数啊)
             self.rect.bottom = -20
             self.flip = self.player.rect.centerx < self.rect.centerx
             self.status = 'dash'
@@ -200,7 +200,7 @@ class Boss(pygame.sprite.Sprite):
     # ----------------------------------------------------------
     # 动画 + 帧事件
     # ----------------------------------------------------------
-    def animate(self, pulse_group):
+    def animate(self, pulse_group):#(chase是什么函数啊)
         anim = self.animations[self.status]
         if self.status in ('attack', 'pulse', 'dash'):
             self.frame_index += 0.1     # ← 越小前摇越长（默认 0.2）
@@ -245,7 +245,7 @@ class Boss(pygame.sprite.Sprite):
     # ----------------------------------------------------------
     # 攻击判定盒（普通攻击专用；脉冲/冲刺各自处理）
     # ----------------------------------------------------------
-    def get_attack_hitbox(self):
+    def get_attack_hitbox(self):#(chase是什么函数啊)
         """普通攻击中段才返回判定盒。"""
         if self.status == 'attack' and 2 <= int(self.frame_index) <= 4:
             w = 57 * self.scale   # 285

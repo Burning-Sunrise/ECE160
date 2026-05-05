@@ -70,7 +70,18 @@ class TradingFloorScreen:
         self.player.handle_input(keys)
         self.player.update(self.walls)
 
+        # ------------------------------------
+        # NEW DAY FIX
+        # ------------------------------------
+        # If trades reset, clear interaction state + prompt
+        if game_state.trades_today == 0:
+            self.current_interaction = None
+            if self.ui:
+                self.ui.clear_prompt()
+
+        # ------------------------------------
         # Interaction detection
+        # ------------------------------------
         self.current_interaction = None
         for zone in self.interaction_zones:
             if self.player.rect.colliderect(zone.rect):
@@ -109,5 +120,9 @@ class TradingFloorScreen:
         if not self.ui:
             return
 
+        # Clear the "Press E" prompt immediately
+        self.ui.clear_prompt()
+
         if zone.type == "terminal":
             self.ui.state = "CONFIRM_TRADE"
+
