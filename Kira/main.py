@@ -7,20 +7,19 @@ from settings import WIDTH, HEIGHT, FPS, GROUND_Y
 
 ANIMATION_INTERVAL = 0.2
 
-# --- 初始化 ---
+
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("DR. WALLSTREET")
 clock = pygame.time.Clock()
 
-# --- 实例化 ---
+
 player = Player(200, 400)
-boss = Boss(1000, 400, player)   # y 仅作占位，Boss 内部会强制贴地
+boss = Boss(1000, 400, player)   # y is just to take the place
 
 pulse_group = pygame.sprite.Group()
 
 
-# --- 资源 ---
 def load_bg():
     img_path = os.path.join("image", "bg", "fight.png")
     try:
@@ -32,7 +31,7 @@ def load_bg():
             frames.append(pygame.transform.scale(frame, (WIDTH, HEIGHT)))
         return frames
     except Exception:
-        print("背景图加载失败")
+        print("failed")
         return [pygame.Surface((WIDTH, HEIGHT))] * 12
 
 
@@ -44,7 +43,7 @@ try:
     heart_empty = pygame.image.load(
         os.path.join("image", "other", "heart_empty.png")).convert_alpha()
 except pygame.error as e:
-    print(f"UI资源加载失败: {e}")
+    print(f"UI failed: {e}")
     heart_full = pygame.Surface((80, 80)); heart_full.fill((255, 0, 0))
     heart_empty = pygame.Surface((80, 80)); heart_empty.fill((50, 50, 50))
 
@@ -53,12 +52,12 @@ heart_empty = pygame.transform.scale(heart_empty, (80, 80))
 
 
 def draw_ui(screen, hp, boss):
-    # 玩家血量（爱心）
+    # player's hp
     for i in range(7):
         img = heart_full if i < hp else heart_empty
         screen.blit(img, (30 + i * 90, 30))
 
-    # boss 血条
+    # boss hp
     bar_w = 600
     bar_h = 20
     bar_x = (WIDTH - bar_w) // 2
@@ -72,7 +71,7 @@ def draw_ui(screen, hp, boss):
                      (bar_x, bar_y, bar_w, bar_h), 2)
 
 
-# --- 主循环 ---
+# main loop
 running = True
 while running:
     # A. 事件
@@ -83,56 +82,49 @@ while running:
             if event.key == pygame.K_SPACE:
                 player.jump()
 
-    # B. 逻辑更新
+    
     player.update()
     boss.update(pulse_group)
     pulse_group.update()
 
-    # C. 碰撞检测
-    # 1) 玩家攻击 -> boss
+    # rect_hit
+    # player -> boss
     player.check_hit_boss(boss)
 
-    # 2) boss 身体接触 -> 玩家扣血
+    # boss attach/collide
     if boss.status != 'death' and player.rect.colliderect(boss.rect):
         player.take_damage()
 
-    # 3) boss 普通攻击 -> 玩家扣血
+    # boss attack
     atk_rect = boss.get_attack_hitbox()
     if atk_rect and player.rect.colliderect(atk_rect):
         player.take_damage()
 
-    # 4) 脉冲 -> 玩家扣血
+    # pulse
     for pulse in pulse_group:
         if getattr(pulse, 'is_dangerous', True) and \
                 player.rect.colliderect(pulse.rect):
             player.take_damage()
             break
-
-    # D. 绘制
-    # 1) 背景
+# draw sth
+    # bg
     current_time = time.time()
     bg_idx = (int(current_time / ANIMATION_INTERVAL)) % 12
     screen.blit(bg_frames[bg_idx], (0, 0))
 
-    # 2) Boss
+    # boss
     boss.draw(screen)
 
-  # 3) 脉冲
+  # pulse
     for pulse in pulse_group:
         img_rect = pulse.image.get_rect(center=pulse.rect.center)
         screen.blit(pulse.image, img_rect)
 
-    # 4) 玩家
+    # player
     player.draw(screen)
 
-    # 5) UI
+    # UI
     draw_ui(screen, player.hp, boss)
-
-    # --- 调试用：把碰撞箱画出来，确认无误后可注释掉 ---
-    # pygame.draw.rect(screen, (255, 0, 0), boss.rect, 2)
-    # pygame.draw.rect(screen, (0, 255, 0), player.rect, 2)
-    # if atk_rect:
-    #     pygame.draw.rect(screen, (255, 165, 0), atk_rect, 2)
 
     pygame.display.flip()
     clock.tick(FPS)

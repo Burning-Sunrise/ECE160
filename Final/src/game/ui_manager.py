@@ -291,7 +291,7 @@ class UIManager:
     def draw(self, surface):
         self.screens[self.current_screen].draw(surface)
 
-        # 梦魇战斗时不画框架的 HUD/暂停按钮
+
         if self.current_screen == "NIGHTMARE":
             return
 
