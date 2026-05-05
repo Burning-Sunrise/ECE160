@@ -1,21 +1,39 @@
-#screen settings
+# screen settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
 GAME_WIDTH = 640
 GAME_HEIGHT = 360
 FPS = 60
 
-#Fullscreen Toggle 
+# Nightmare battle resolution (Kira's boss fight)
+NIGHTMARE_WIDTH = 1280
+NIGHTMARE_HEIGHT = 720
 
+# Aliases for nightmare module (boss.py imports these)
+WIDTH = NIGHTMARE_WIDTH
+HEIGHT = NIGHTMARE_HEIGHT
+
+# Boss constants
+GROUND_Y = 600
+BOSS_WALK_SPEED = 2
+BOSS_RUN_SPEED = 7
+BOSS_DASH_SPEED = 12
+BOSS_ATTACK_RANGE = 200
+BOSS_ATTACK_COOLDOWN = 1500
+BOSS_PULSE_RECOVER = 500
+BOSS_INTRO_DELAY = 2500
+PLAYER_INVINCIBLE_FRAMES = 60
+
+# Fullscreen Toggle
 FULLSCREEN = False
 
-#colors (R, G, B)
-
+# colors (R, G, B)
 COLOR_BG = (30, 30, 30)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (200, 50, 50)
 COLOR_GREEN = (50, 200, 50)
 COLOR_BLUE = (50, 50, 200)
 
-#Player Settings
+# Player Settings
 PLAYER_SPEED = 5
+PLAYER_INVINCIBLE_FRAMES = 60

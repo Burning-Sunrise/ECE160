@@ -148,12 +148,6 @@ class UIManager:
                     # Spend trade + stress
                     self.game_state.record_trade()
 
-                    # If NIGHT triggered
-                    if self.game_state.time_of_day == "NIGHT":
-                        self.change_screen("RECOVERY_ROOM")
-                        self.state = None
-                        return
-
                     # Open investment popup
                     self.invest_popup = InvestmentPopup(
                         self.screen, self.font, self.money
@@ -270,7 +264,7 @@ class UIManager:
             return
 
         # Nightmare triggers immediately
-        if game_state.is_nightmare():
+        if game_state.is_nightmare() and self.current_screen != "NIGHTMARE": 
             self.clear_prompt()
             self.state = None
             self.change_screen("NIGHTMARE")
@@ -297,6 +291,10 @@ class UIManager:
     # ------------------------------------------------
     def draw(self, surface):
         self.screens[self.current_screen].draw(surface)
+
+
+        if self.current_screen == "NIGHTMARE":
+            return
 
         if self.state is None:
             self._draw_pause_button(surface)
