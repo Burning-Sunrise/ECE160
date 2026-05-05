@@ -270,7 +270,7 @@ class UIManager:
             return
 
         # Nightmare triggers immediately
-        if game_state.is_nightmare():
+        if game_state.is_nightmare() and self.current_screen != "NIGHTMARE": 
             self.clear_prompt()
             self.state = None
             self.change_screen("NIGHTMARE")
@@ -290,6 +290,10 @@ class UIManager:
     # ------------------------------------------------
     def draw(self, surface):
         self.screens[self.current_screen].draw(surface)
+
+        # 梦魇战斗时不画框架的 HUD/暂停按钮
+        if self.current_screen == "NIGHTMARE":
+            return
 
         if self.state is None:
             self._draw_pause_button(surface)

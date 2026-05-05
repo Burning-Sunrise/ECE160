@@ -35,6 +35,17 @@ class RecoveryRoomScreen:
 
         self.result_text = ""
         self.outcome = None
+        self.entered = False
+
+    def _reset(self):
+        """每次进入药房时重置状态"""
+        self.timer = 0
+        self.phase = "ENTER"
+        self.choice = None
+        self.applied_result = False
+        self.fade_alpha = 0
+        self.result_text = ""
+        self.outcome = None
 
     # ----------------------------------------
     # Input
@@ -58,6 +69,11 @@ class RecoveryRoomScreen:
     # Update
     # ----------------------------------------
     def update(self, dt, game_state):
+        #for pharmacy check
+
+        if not self.entered:
+            self._reset()
+            self.entered = True
 
         # Reset result application each visit
         if self.phase == "ENTER":
@@ -83,13 +99,14 @@ class RecoveryRoomScreen:
                     self.result_text = "You skip the medication. Stress rises."
 
                 # Determine outcome
-                stress = game_state.stress
-                if stress >= game_state.max_stress:
-                    self.outcome = "DEATH"
-                elif stress >= 60:
-                    self.outcome = "NIGHTMARE"
-                else:
-                    self.outcome = "PEACEFUL"
+            stress = game_state.stress
+            if stress >= game_state.max_stress:
+                self.outcome = "DEATH"
+            elif stress >= 60:
+                self.outcome = "NIGHTMARE"
+                self.result_text += " You feel awful tonight..."   
+            else:
+                self.outcome = "PEACEFUL"
 
                 self.applied_result = True
 
@@ -98,7 +115,8 @@ class RecoveryRoomScreen:
             self.fade_alpha += self.fade_speed * dt
 
             if self.fade_alpha >= 255:
-                self.ui.state = None  # ensure HUD updates
+                self.ui.state = None # ensure HUD updates
+                self.entered = False  
 
                 if self.outcome == "DEATH":
                     self.ui.change_screen("GAME_OVER")
