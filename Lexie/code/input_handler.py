@@ -18,7 +18,7 @@ def handle_input(floor):
             shift = mods & pygame.KMOD_SHIFT
 
             # Switch symbols
-            if pygame.K_1 <= event.key <= pygame.K_4:
+            if pygame.K_1 <= event.key <= pygame.K_5:
                 idx = event.key - pygame.K_1
                 if idx < len(floor.symbols):
                     floor.current_index = idx

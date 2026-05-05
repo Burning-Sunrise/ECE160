@@ -5,20 +5,7 @@ import pygame
 from ai_pipeline import AIPipeline
 from input_handler import handle_input
 from tick_generator import generate_tick, add_wicks_to_existing
-
-WIDTH, HEIGHT = 1000, 700
-FPS = 60
-START_CASH = 1000.0
-MED_GOAL = 2500.0
-SESSION_TIME = 90
-TICK_SPEED = 400  # 400ms for ALL symbols
-
-BG = (5, 7, 10)
-GRID = (20, 22, 28)
-WHITE = (200, 210, 220)
-GREEN = (0, 255, 140)
-RED = (255, 50, 70)
-GOLD = (255, 210, 0)
+from config import *
 
 
 class TradingFloor:
@@ -74,8 +61,7 @@ class TradingFloor:
                         "high": 100.0,
                         "low": 100.0,
                     })
-
-            self._add_wicks_to_existing(buf)
+            add_wicks_to_existing(buf)
 
             self.buffers[sym] = buf
             self.current_price[sym] = buf[-1]["close"]
@@ -307,7 +293,7 @@ class TradingFloor:
             now = pygame.time.get_ticks()
             for sym in self.symbols:
                 if now - self.last_tick[sym] > TICK_SPEED:
-                    self.generate_tick(sym)
+                    generate_tick(self, sym)
                     self.last_tick[sym] = now
 
             buf = self.buffers[self.current_symbol][-50:]
