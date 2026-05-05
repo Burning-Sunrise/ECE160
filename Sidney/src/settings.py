@@ -18,4 +18,4 @@ COLOR_GREEN = (50, 200, 50)
 COLOR_BLUE = (50, 50, 200)
 
 #Player Settings
-PLAYER_SPEED = 5
+PLAYER_SPEED = 2

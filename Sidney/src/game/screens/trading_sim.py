@@ -21,6 +21,7 @@ class TradingSimScreen:
         pass  # No input needed
 
     def update(self, dt, game_state):
+
         # dt is in SECONDS (0.016, 0.033, etc.)
 
         # If already finished, do nothing
@@ -71,3 +72,5 @@ class TradingSimScreen:
         rect = surf.get_rect(center=(surface.get_width() // 2,
                                      surface.get_height() // 2))
         surface.blit(surf, rect)
+
+
