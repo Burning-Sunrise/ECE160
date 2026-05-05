@@ -56,19 +56,45 @@ def handle_input(floor):
                     entry = floor.position[sym]["entry"]
                     units = floor.position[sym]["units"]
                     price = floor.current_price[sym]
-                    value = price * units
+                    value = price * units *1.5
                     floor.portfolio += value
                     del floor.position[sym]
                     floor.shake_timer = 8
 
             # INSIDER TERMINAL
             if event.key == pygame.K_i and shift:
-                if not floor.insider_active and floor.insider_cooldown == 0:
+                if floor.insider_cooldown == 0 and not floor.insider_active:
                     if floor.portfolio >= floor.insider_cost:
+
+                        # Deduct cost
                         floor.portfolio -= floor.insider_cost
+
+                        # Fetch NEW candle data
+                        seq = floor.buffers[floor.current_symbol][-50:]
+
+                        # Run NEW prediction
+                        pred = floor.ai.predict(seq)
+
+                        # Convert to candle dicts
+                        converted = []
+                        for p in pred:
+                            converted.append({
+                                "open": float(p[0]),
+                                "high": float(p[1]),
+                                "low": float(p[2]),
+                                "close": float(p[3])
+                            })
+
+                        floor.ai_prediction = converted
+
+                        # Activate insider mode
                         floor.insider_active = True
                         floor.insider_timer = 180
+
+                        # Start cooldown (UI will now show cooldown)
                         floor.insider_cooldown = 300
+
+                        print("INSIDER: NEW prediction generated")
 
             # Toggle holdings
             if event.key == pygame.K_h:

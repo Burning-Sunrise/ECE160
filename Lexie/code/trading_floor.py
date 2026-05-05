@@ -9,7 +9,7 @@ from config import *
 
 
 class TradingFloor:
-    def __init__(self, market, symbols):
+    def __init__(self, market, symbols, use_real_data=True):
         pygame.init()
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("SURVIVAL TERMINAL")
@@ -27,6 +27,7 @@ class TradingFloor:
         self.insider_cooldown = 0
         self.insider_cost = 50
 
+
         self.market = market
         self.symbols = symbols
         self.current_index = 0
@@ -39,14 +40,16 @@ class TradingFloor:
 
 
         for sym in self.symbols:
-            hist = self.market.get_history(sym, 200)
-            buf = list(hist) if hist else []
-
+            if use_real_data:
+                hist = self.market.get_history(sym, 200)
+                buf = list(hist) if hist else []
+            else:
+                buf = []
             # Fill to 50 candles
             while len(buf) < 50:
                 if buf:
                     last = buf[-1]
-                    move = random.uniform(-1, 1)
+                    move = random.uniform(-5, 5)
                     new_close = last["close"] + move
                     buf.append({
                         "open": last["close"],
@@ -98,10 +101,9 @@ class TradingFloor:
         for i in range(0, HEIGHT, 50):
             pygame.draw.line(self.screen, GRID, (0, i + frame_offset_y), (WIDTH, i + frame_offset_y))
 
-        # Chart always starts on the right
-        x = WIDTH - 120
+        # REAL CANDLES — shift left to make room for ghost candles
+        x = WIDTH - 350   # <-- moved left so ghost candles fit
 
-        # REAL CANDLES 
         for c in reversed(visible):
             color = GREEN if c["close"] >= c["open"] else RED
             y_o = py(c["open"])
@@ -109,7 +111,7 @@ class TradingFloor:
             y_h = py(c["high"])
             y_l = py(c["low"])
 
-            # wick (NO horizontal offset)
+            # wick
             pygame.draw.line(self.screen, color,
                             (x + 6, y_h + frame_offset_y),
                             (x + 6, y_l + frame_offset_y), 1)
@@ -122,47 +124,62 @@ class TradingFloor:
             x -= 18
 
         # last real candle X
-        rightmost_x = WIDTH -120
+        rightmost_x = WIDTH - 350
 
         # ghost candles start immediately to the right
         ghost_x = rightmost_x + 18
         self.chart_right_edge = ghost_x
 
-        # GHOST FUTURE CANDLES
+        # GHOST FUTURE CANDLES — FIXED SCALING
         if self.insider_active and self.ai_prediction:
+            print("GHOST LOOP RUNNING, COUNT:", len(self.ai_prediction))
+            pygame.draw.line(
+            self.screen,
+            (255, 255, 0),
+            (ghost_x, 150),
+            (ghost_x, 550),
+            3
+        )
+
             for i, c in enumerate(self.ai_prediction[:10]):
+                # use model values directly — NO SCALING
                 o = c["open"]
                 h = c["high"]
                 l = c["low"]
                 cl = c["close"]
+                
+                # rebase ghost candles to current price
+                current = visible[-1]["close"]
+                offset = current - o
 
-                scale = (high - low) * 0.6
-                base = self.current_price[self.current_symbol]
+                o += offset
+                h += offset
+                l += offset
+                cl += offset
 
-                o = base + o * scale
-                h = base + h * scale
-                l = base + l * scale
-                cl = base + cl * scale
+                # clamp to chart range
+                # normalize ghost candles into the real chart range
+                o = max(low, min(high, o))
+                h = max(low, min(high, h))
+                l = max(low, min(high, l))
+                cl = max(low, min(high, cl))
 
-                ghost_low = low - (high - low) * 0.5
-                ghost_high = high + (high - low) * 0.5
-
-                o = max(ghost_low, min(ghost_high, o))
-                h = max(ghost_low, min(ghost_high, h))
-                l = max(ghost_low, min(ghost_high, l))
-                cl = max(ghost_low, min(ghost_high, cl))
 
                 color = (0, 255, 0) if cl >= o else (255, 0, 0)
-                alpha = 200 - int( i * (200/10))
+                alpha = 200 - int(i * (200 / 10))
 
-                # wick (NO horizontal offset)
+                print("GHOST Y:", py(c["high"]), py(c["low"]), py(c["open"]), py(c["close"]))
+
+
+                # wick
                 pygame.draw.line(
                     self.screen,
-                    color,
+                    (0, 255, 255),
                     (ghost_x + 6, py(h) + frame_offset_y),
                     (ghost_x + 6, py(l) + frame_offset_y),
-                    2
+                    4
                 )
+
 
                 # body
                 top = py(max(o, cl))
@@ -232,16 +249,23 @@ class TradingFloor:
         else:
             self.screen.blit(self.font.render("[B] BUY 20 UNITS", True, GREEN), (750, 35))
 
-        # QUANT ORACLE UI 
-        if self.insider_cooldown > 0:
+        # QUANT ORACLE UI
+        if self.insider_active:
+            label = "[I] QUANT ORACLE (ACTIVE)"
+            col = GOLD
+
+        elif self.insider_cooldown > 0:
             label = f"[I] QUANT ORACLE (COOLDOWN {self.insider_cooldown//60}s)"
             col = (120, 120, 120)
+
         elif self.portfolio < self.insider_cost:
             label = "[I] QUANT ORACLE (INSUFFICIENT FUNDS)"
             col = (120, 80, 80)
+
         else:
             label = f"[I] QUANT ORACLE (${self.insider_cost})"
             col = GOLD
+
 
         self.screen.blit(self.font.render(label, True, col), (650, 55))
 
@@ -286,9 +310,10 @@ class TradingFloor:
     # MAIN LOOP 
     def run(self):
         while self.running:
-            print("AI PRED:", self.ai_prediction)
+            print("INSIDER ACTIVE", self.insider_active)
 
             handle_input(self)
+
             # Micro-ticks for ALL symbols
             now = pygame.time.get_ticks()
             for sym in self.symbols:
@@ -296,19 +321,7 @@ class TradingFloor:
                     generate_tick(self, sym)
                     self.last_tick[sym] = now
 
-            buf = self.buffers[self.current_symbol][-50:]
-            pred = self.ai.predict(buf)
-            if pred:
-                if len(pred) >= 10:
-                    pred = pred[:10]
-                else:
-                    # pad by repeating the last prediction
-                    last = pred[-1]
-                    pred = pred + [last] * (10 - len(pred))
-            else:
-                pred = []
 
-            self.ai_prediction = pred
             # QUANT TIMERS
             if self.insider_active:
                 self.insider_timer -= 1
@@ -318,7 +331,7 @@ class TradingFloor:
             if self.insider_cooldown > 0:
                 self.insider_cooldown -= 1
 
-
+            # End session
             if time.time() - self.start_time > SESSION_TIME:
                 self.running = False
 
@@ -327,29 +340,4 @@ class TradingFloor:
 
         self.final_screen()
 
-    # FINAL SCREEN
-    def final_screen(self):
-        while True:
-            self.screen.fill(BG)
-            if self.portfolio >= MED_GOAL:
-                msg, col = "CONTRACTS FULFILLED: PROFIT SECURED", GREEN
-            else:
-                msg, col = "MARGIN CALL: ACCOUNT LIQUIDATED", RED
-
-            self.screen.blit(self.big_font.render(msg, True, col),
-                             (WIDTH // 2 - 350, HEIGHT // 2 - 20))
-            self.screen.blit(self.font.render(f"FINAL BALANCE: ${self.portfolio:.2f}", True, WHITE),
-                             (WIDTH // 2 - 120, HEIGHT // 2 + 40))
-            self.screen.blit(self.font.render("ESC to QUIT", True, (60, 60, 70)),
-                             (WIDTH // 2 - 60, HEIGHT - 50))
-                
-            pygame.display.flip()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT or (
-                    event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE
-                ):
-                    pygame.quit()
-                    sys.exit()
-
-               
-    
+        

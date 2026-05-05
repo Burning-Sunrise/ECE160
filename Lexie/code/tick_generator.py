@@ -9,8 +9,9 @@ def add_wicks_to_existing(buf):
         c["low"] = min(c["open"], c["close"]) - wick
 
 
-def generate_tick(floor, sym):
-    """Generates a synthetic micro‑tick for a symbol."""
+def generate_tick(floor, sym, training=False):
+    """Generates a synthetic micro‑tick for a symbol.
+       If training=True, buffer is allowed to grow beyond 50 candles."""
     buf = floor.buffers[sym]
     price = floor.current_price[sym]
 
@@ -25,7 +26,7 @@ def generate_tick(floor, sym):
 
     # Trend bias
     last = buf[-1]
-    trend = (last["close"] - last["open"]) / 40
+    trend = (last["close"] - last["open"]) / 25
 
     # Rare volatility bursts
     if random.random() < 0.05:
@@ -42,7 +43,7 @@ def generate_tick(floor, sym):
     floor.current_price[sym] = close_p
 
     # Wick amplification
-    wick = abs(move) * random.uniform(0.8, 1.4)
+    wick = abs(move) * random.uniform(1.2, 2.0)
 
     # Append new candle
     buf.append({
@@ -52,6 +53,6 @@ def generate_tick(floor, sym):
         "low": min(open_p, close_p) - wick,
     })
 
-    # Keep buffer at 50 candles
-    if len(buf) > 50:
+    # Keep buffer at 50 candles ONLY during gameplay
+    if not training and len(buf) > 50:
         buf.pop(0)

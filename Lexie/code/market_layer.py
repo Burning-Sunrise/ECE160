@@ -2,10 +2,17 @@ import yfinance as yf
 from datetime import datetime, timezone
 
 class MarketLayer:
-    def __init__(self, symbols):
+    def __init__(self, symbols, use_real_data=True):
         self.symbols = symbols
+        self.use_real_data = use_real_data
         self.data = {sym: [] for sym in symbols}
-        self._fetch_initial_data()
+
+        if use_real_data:
+            self._fetch_initial_data()
+        else:
+            # synthetic mode: start with empty lists
+            for sym in self.symbols:
+                self.data[sym] = []
 
     def _fetch_initial_data(self):
         for sym in self.symbols:
