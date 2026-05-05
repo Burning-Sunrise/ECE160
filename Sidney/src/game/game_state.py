@@ -10,6 +10,8 @@ class GameState:
         # --- Core Player Stats ---
         self.money = 1000          # Starting money
         self.day = 1               # Current day
+        
+        # --- Stress and Mood Stats ---
         self.stress = 0            # Mood / stress level
         self.max_stress = 100      # Stress cap
 

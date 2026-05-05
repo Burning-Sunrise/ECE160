@@ -36,8 +36,8 @@ class UIManager:
         self.money = 0
         self.day = 1
         self.actions_left = 3
-        self.mood = 0
-        self.max_mood = 100
+        self.stress = 0
+        self.max_stress = 100
 
         # Investment popup
         self.invest_popup = None
@@ -67,6 +67,7 @@ class UIManager:
     # ------------------------------------------------
     def change_screen(self, new_screen):
         if new_screen in self.screens:
+            self.clear_prompt()
             self.current_screen = new_screen
 
     # ------------------------------------------------
@@ -102,10 +103,11 @@ class UIManager:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 scaled_pos = self._scale_mouse(event.pos)
 
-            # Always forward event
             result = self.invest_popup.handle_event(event, scaled_pos)
 
             if isinstance(result, int):
+                self.clear_prompt()
+
                 self.invest_amount = result
 
                 # Deduct money
@@ -119,6 +121,7 @@ class UIManager:
                 return
 
             if result == "cancel":
+                self.clear_prompt()
                 self.state = None
                 return
 
@@ -133,12 +136,32 @@ class UIManager:
                 action = self.confirm_trade.handle_click(scaled_pos)
 
                 if action == "yes":
+                    self.clear_prompt()
+
+                    # Prevent negative trades
+                    if self.game_state.trades_today >= self.game_state.max_trades_per_day:
+                        self.game_state.time_of_day = "NIGHT"
+                        self.change_screen("RECOVERY_ROOM")
+                        self.state = None
+                        return
+
+                    # Spend trade + stress
+                    self.game_state.record_trade()
+
+                    # If NIGHT triggered
+                    if self.game_state.time_of_day == "NIGHT":
+                        self.change_screen("RECOVERY_ROOM")
+                        self.state = None
+                        return
+
+                    # Open investment popup
                     self.invest_popup = InvestmentPopup(
                         self.screen, self.font, self.money
                     )
                     self.state = "INVEST"
 
                 elif action == "no":
+                    self.clear_prompt()
                     self.state = None
 
             return
@@ -236,9 +259,24 @@ class UIManager:
         self.money = game_state.money
         self.day = game_state.day
         self.actions_left = game_state.max_trades_per_day - game_state.trades_today
-        self.mood = game_state.stress
+        self.stress = game_state.stress
+        self.max_stress = game_state.max_stress
 
-        # ⭐ Always update TradingSimScreen
+        # NIGHT triggers Recovery Room automatically
+        if game_state.time_of_day == "NIGHT" and self.current_screen not in ("RECOVERY_ROOM", "NIGHTMARE", "GAME_OVER"):
+            self.clear_prompt()
+            self.state = None
+            self.change_screen("RECOVERY_ROOM")
+            return
+
+        # Nightmare triggers immediately
+        if game_state.is_nightmare():
+            self.clear_prompt()
+            self.state = None
+            self.change_screen("NIGHTMARE")
+            return
+
+        # Always update TradingSimScreen
         if self.current_screen == "TRADING_SIM":
             self.screens["TRADING_SIM"].update(dt, game_state)
             return
@@ -295,11 +333,10 @@ class UIManager:
         money_surf = self.font.render(f"Money: ${self.money}", True, (255, 255, 255))
         day_surf = self.font.render(f"Day: {self.day}", True, (255, 255, 255))
         actions_surf = self.font.render(f"Trades Left: {self.actions_left}", True, (255, 255, 255))
-        mood_surf = self.font.render(f"Mood: {self.mood}/{self.max_mood}", True, (255, 255, 255))
+        stress_surf = self.font.render(f"Stress: {self.stress}/{self.max_stress}", True, (255, 255, 255))
 
         surface.blit(money_surf, (20, 20))
         surface.blit(day_surf, (20, 50))
         surface.blit(actions_surf, (20, 80))
-        surface.blit(mood_surf, (20, 110))
-
+        surface.blit(stress_surf, (20, 110))
 
