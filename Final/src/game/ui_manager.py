@@ -148,12 +148,6 @@ class UIManager:
                     # Spend trade + stress
                     self.game_state.record_trade()
 
-                    # If NIGHT triggered
-                    if self.game_state.time_of_day == "NIGHT":
-                        self.change_screen("RECOVERY_ROOM")
-                        self.state = None
-                        return
-
                     # Open investment popup
                     self.invest_popup = InvestmentPopup(
                         self.screen, self.font, self.money

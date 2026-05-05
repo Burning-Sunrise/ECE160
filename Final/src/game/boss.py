@@ -17,7 +17,6 @@ class Boss(pygame.sprite.Sprite):
 
 
     def __init__(self, x, y, player):
-        print("Boss init")
         super().__init__()
         self.player = player#(we need to use the player's location)
         self.scale = 5
@@ -103,7 +102,6 @@ class Boss(pygame.sprite.Sprite):
 
 
     def update(self, pulse_group):
-        print("Boss update")
         if self.status == 'death':
             self.animate(pulse_group)
             return
