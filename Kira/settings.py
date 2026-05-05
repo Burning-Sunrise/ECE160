@@ -23,6 +23,3 @@ BOSS_ATTACK_COOLDOWN = 1500      # 攻击间冷却（毫秒）
 BOSS_PULSE_RECOVER = 500         # 脉冲消失后的额外硬直（毫秒）
 BOSS_INTRO_DELAY = 2500          # 开局静止时长（毫秒）
 
-# Nightmare battle resolution (Kira's boss fight)
-NIGHTMARE_WIDTH = 1280
-NIGHTMARE_HEIGHT = 720
