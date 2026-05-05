@@ -9,6 +9,9 @@ from settings import SCREEN_WIDTH, SCREEN_HEIGHT, FULLSCREEN, COLOR_BG, FPS
 GAME_WIDTH = 640
 GAME_HEIGHT = 360
 
+# Nightmare battle resolution (Kira's boss fight)
+NIGHTMARE_WIDTH = 1280
+NIGHTMARE_HEIGHT = 720
 
 def main():
     pygame.init()
