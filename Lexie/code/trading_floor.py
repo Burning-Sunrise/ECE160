@@ -4,7 +4,7 @@ import random
 import pygame
 from ai_pipeline import AIPipeline
 from input_handler import handle_input
-from tick_generator import generate_tick
+from tick_generator import generate_tick, add_wicks_to_existing
 
 WIDTH, HEIGHT = 1000, 700
 FPS = 60
@@ -87,62 +87,6 @@ class TradingFloor:
         self.running = True
         self.shake_timer = 0
         self.show_holdings = False
-
-    def _add_wicks_to_existing(self, buf):
-        for c in buf:
-            body = abs(c["close"] - c["open"])
-            wick = body * random.uniform(0.6, 1.4)
-
-            c["high"] = max(c["open"], c["close"]) + wick
-            c["low"] = min(c["open"], c["close"]) - wick
-
-
-    
-
-    #  MICRO-TICK FOR ALL SYMBOLS 
-    def generate_tick(self, sym):
-        buf = self.buffers[sym]
-        price = self.current_price[sym]
-
-        #  REAL VOLATILITY 
-        recent = buf[-20:]
-        ranges = [c["high"] - c["low"] for c in recent]
-        avg_range = sum(ranges) / len(ranges) if ranges else 1.0
-
-        #  VOLATILITY MULTIPLIER 
-        VOL_MULT = 3.5   # try 3.0–5.0 depending on how alive you want it
-        vol = max((avg_range / 20) * VOL_MULT, 0.05)
-
-        # TREND BIAS 
-        last = buf[-1]
-        trend = (last["close"] - last["open"]) / 40   # stronger trend influence
-
-        # NOISE BURSTS (rare spikes)
-        if random.random() < 0.05:   # 5% chance
-            vol *= 2.2               # sudden volatility burst
-
-        # VOLATILITY CLUSTERING ---
-        if random.random() < 0.15:
-            vol *= 1.4               # cluster effect
-
-        # MICRO-TICK MOVE 
-        move = random.gauss(trend, vol)
-        open_p = price
-        close_p = open_p + move
-        self.current_price[sym] = close_p
-
-        # WICK AMPLIFICATION 
-        wick = abs(move) * random.uniform(0.8, 1.4)
-
-        buf.append({
-            "open": open_p,
-            "close": close_p,
-            "high": max(open_p, close_p) + wick,
-            "low": min(open_p, close_p) - wick,
-        })
-
-        if len(buf) > 50:
-            buf.pop(0)
 
 
     # DRAW CHART 
