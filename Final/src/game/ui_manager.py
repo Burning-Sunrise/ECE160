@@ -279,6 +279,13 @@ class UIManager:
         # Always update TradingSimScreen
         if self.current_screen == "TRADING_SIM":
             self.screens["TRADING_SIM"].update(dt, game_state)
+            if self.screens["TRADING_SIM"].state ==  "EXIT":
+                # Check if trades are finished 
+                if game_state.trades_today >= game_state.max_trades_per_day:
+                    game_state.time_of_day = "NIGHT"
+                    self.state = None
+                    self.change_screen("RECOVERY_ROOM")
+                    return
             return
 
         # Normal updates
