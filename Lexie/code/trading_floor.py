@@ -3,7 +3,8 @@ import time
 import random
 import pygame
 from ai_pipeline import AIPipeline
-
+from input_handler import handle_input
+from tick_generator import generate_tick
 
 WIDTH, HEIGHT = 1000, 700
 FPS = 60
@@ -48,8 +49,6 @@ class TradingFloor:
         self.buffers = {}
         self.current_price = {}
         self.last_tick = {}
-
-
 
 
         for sym in self.symbols:
@@ -97,116 +96,6 @@ class TradingFloor:
             c["high"] = max(c["open"], c["close"]) + wick
             c["low"] = min(c["open"], c["close"]) - wick
 
-    # INPUT 
-    def _handle_input(self):
-        for event in pygame.event.get():
-
-            # Quit
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-
-            # Keydown handler
-            if event.type == pygame.KEYDOWN:
-
-                # ESC quits
-                if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-
-                # Detect SHIFT
-                mods = pygame.key.get_mods()
-                shift = mods & pygame.KMOD_SHIFT
-
-                if pygame.K_1 <= event.key <= pygame.K_4:
-                    idx = event.key - pygame.K_1
-                    if idx < len(self.symbols):
-                        self.current_index = idx
-                        self.current_symbol = self.symbols[idx]
-                        self.shake_timer = 5
-                        print("Switched to", self.current_symbol)
-
-                # BUY (Shift + B)
-                if event.key == pygame.K_b and shift:
-                    sym = self.current_symbol
-                    price = self.current_price[sym]
-                    units = 2
-                    cost=price * units
-
-                    if self.portfolio < cost:
-                        print("INSUFFICIENT FUNDS")
-                        return
-                    
-                    self.portfolio -= cost
-                    # If no position yet, create one
-                    if sym not in self.position:
-                        self.position[sym] = {
-                            "entry": price,
-                            "units": units
-                        }
-                    else:
-                        # Weighted average stacking
-                        old_entry = self.position[sym]["entry"]
-                        old_units = self.position[sym]["units"]
-
-                        new_units = old_units + units
-                        new_entry = (old_entry * old_units + price * units) / new_units
-
-                        self.position[sym]["entry"] = new_entry
-                        self.position[sym]["units"] = new_units
-
-                    self.shake_timer = 5
-                    print("BUY", sym, "units:", units, "avg entry:", self.position[sym]["entry"])
-
-
-                # SELL (Shift + S)
-                if event.key == pygame.K_s and shift:
-                    sym = self.current_symbol
-
-                    if sym in self.position:
-                        entry_price = self.position[sym]["entry"]
-                        units = self.position[sym]["units"]
-                        price = self.current_price[sym]
-                        
-                        #Full liquidation value
-                        value = price * units
-
-                        self.portfolio += value
-
-                        del self.position[sym]
-                        self.shake_timer = 8
-                        print("SELL", sym, "value returned:", value)
-
-                # INSIDER TERMINAL (Shift + I)
-                if event.key == pygame.K_i and shift:
-                    if not self.insider_active and self.insider_cooldown == 0:
-                        if self.portfolio >= self.insider_cost:
-                            self.portfolio -= self.insider_cost
-                            self.insider_active = True
-                            self.insider_timer = 180   # 3 seconds
-                            self.insider_cooldown = 300  # 5 seconds
-                            print("INSIDER TERMINAL ACTIVATED")
-                        else:
-                            print("Not enough funds for Insider Terminal")
-
-                # Togle holdings panel
-                if event.key == pygame.K_h:
-                    self.show_holdings = not self.show_holdings
-                
-
-
-            # Mouse tabs
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mx, my = pygame.mouse.get_pos()
-                if my < 40:
-                    tab_x = 30
-                    for i, sym in enumerate(self.symbols):
-                        if tab_x <= mx <= tab_x + 100:
-                            self.current_index = i
-                            self.current_symbol = sym
-                            self.shake_timer = 5
-                            break
-                        tab_x += 120
 
     
 
@@ -469,8 +358,7 @@ class TradingFloor:
         while self.running:
             print("AI PRED:", self.ai_prediction)
 
-            self._handle_input()
-
+            handle_input(self)
             # Micro-ticks for ALL symbols
             now = pygame.time.get_ticks()
             for sym in self.symbols:
