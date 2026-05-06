@@ -335,13 +335,32 @@ class UIManager:
                          (self.pause_button_rect.x + 20, self.pause_button_rect.y + 24), 3)
 
     def _draw_hud(self, surface):
+        # Render text
         money_surf = self.font.render(f"Money: ${self.money}", True, (255, 255, 255))
         day_surf = self.font.render(f"Day: {self.day}", True, (255, 255, 255))
         actions_surf = self.font.render(f"Trades Left: {self.actions_left}", True, (255, 255, 255))
         stress_surf = self.font.render(f"Stress: {self.stress}/{self.max_stress}", True, (255, 255, 255))
 
-        surface.blit(money_surf, (20, 20))
-        surface.blit(day_surf, (20, 50))
-        surface.blit(actions_surf, (20, 80))
-        surface.blit(stress_surf, (20, 110))
+        # Text positions
+        x = 20
+        y = 20
+
+        # Panel size (auto‑fits your text)
+        panel_width = 200
+        panel_height = 130
+
+        # Draw semi‑transparent rounded rectangle background
+        hud_bg = pygame.Surface((panel_width, panel_height), pygame.SRCALPHA)
+        pygame.draw.rect(hud_bg, (0, 0, 0, 160), (0, 0, panel_width, panel_height), border_radius=12)
+        pygame.draw.rect(hud_bg, (255, 255, 255, 40), (0, 0, panel_width, panel_height), width=2, border_radius=12)
+
+        # Blit panel
+        surface.blit(hud_bg, (x - 10, y - 10))
+
+        # Draw text on top
+        surface.blit(money_surf, (x, y))
+        surface.blit(day_surf, (x, y + 30))
+        surface.blit(actions_surf, (x, y + 60))
+        surface.blit(stress_surf, (x, y + 90))
+
 
