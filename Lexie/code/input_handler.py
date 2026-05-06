@@ -26,17 +26,19 @@ def handle_input(floor):
                     floor.shake_timer = 5
 
             # BUY
+            #buys 2 units of current symbol
+            #uses weighted average entry price if already holding
             if event.key == pygame.K_b and shift:
                 sym = floor.current_symbol
                 price = floor.current_price[sym]
                 units = 2
                 cost = price * units
-
+                #not enough cash, ignore
                 if floor.portfolio < cost:
                     return
-
+                #deduct cost
                 floor.portfolio -= cost
-
+                #new poosition or add to existing
                 if sym not in floor.position:
                     floor.position[sym] = {"entry": price, "units": units}
                 else:
@@ -47,9 +49,10 @@ def handle_input(floor):
                     floor.position[sym]["entry"] = new_entry
                     floor.position[sym]["units"] = new_units
 
-                floor.shake_timer = 5
+                floor.shake_timer = 5 #visual
 
             # SELL
+            #removes current position
             if event.key == pygame.K_s and shift:
                 sym = floor.current_symbol
                 if sym in floor.position:
@@ -59,9 +62,11 @@ def handle_input(floor):
                     value = price * units *1.5
                     floor.portfolio += value
                     del floor.position[sym]
-                    floor.shake_timer = 8
+                    floor.shake_timer = 8 #stronger visual indicate loss
 
             # INSIDER TERMINAL
+            #activate prediciton 
+            #user pays 50 to see future candles
             if event.key == pygame.K_i and shift:
                 if floor.insider_cooldown == 0 and not floor.insider_active:
                     if floor.portfolio >= floor.insider_cost:

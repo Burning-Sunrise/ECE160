@@ -38,13 +38,15 @@ class TradingFloor:
         self.current_price = {}
         self.last_tick = {}
 
-
+        #loadd last 200 candles
+        #otherwise resort to default
+        #buffer with 50 candles min to ensure enough data
         for sym in self.symbols:
             if use_real_data:
                 hist = self.market.get_history(sym, 200)
                 buf = list(hist) if hist else []
             else:
-                buf = []
+                buf = [] 
             # Fill to 50 candles
             while len(buf) < 50:
                 if buf:
@@ -64,11 +66,14 @@ class TradingFloor:
                         "high": 100.0,
                         "low": 100.0,
                     })
+                #adding wick realism
             add_wicks_to_existing(buf)
 
             self.buffers[sym] = buf
             self.current_price[sym] = buf[-1]["close"]
             self.last_tick[sym] = pygame.time.get_ticks()
+
+        #portfolio and game state
 
         self.portfolio = START_CASH
         self.position = {}
@@ -164,7 +169,6 @@ class TradingFloor:
                 l = max(low, min(high, l))
                 cl = max(low, min(high, cl))
 
-
                 color = (0, 255, 0) if cl >= o else (255, 0, 0)
                 alpha = 200 - int(i * (200 / 10))
 
@@ -179,7 +183,6 @@ class TradingFloor:
                     (ghost_x + 6, py(l) + frame_offset_y),
                     4
                 )
-
 
                 # body
                 top = py(max(o, cl))
@@ -315,6 +318,8 @@ class TradingFloor:
             handle_input(self)
 
             # Micro-ticks for ALL symbols
+            #minimize lag
+            #symbols update own timer
             now = pygame.time.get_ticks()
             for sym in self.symbols:
                 if now - self.last_tick[sym] > TICK_SPEED:

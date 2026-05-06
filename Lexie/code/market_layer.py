@@ -6,7 +6,7 @@ class MarketLayer:
         self.symbols = symbols
         self.use_real_data = use_real_data
         self.data = {sym: [] for sym in symbols}
-
+        #fetch historical data if possible
         if use_real_data:
             self._fetch_initial_data()
         else:
@@ -19,6 +19,9 @@ class MarketLayer:
             try:
                 df = yf.download(sym, period="1d", interval="1m")
                 candles = []
+                #convert each row into candle dict
+                #use dict. flexible, perfect for structured candle data
+                #JSON-friendly
                 for ts, row in df.iterrows():
                     candles.append({
                         "ts": ts.to_pydatetime().replace(tzinfo=timezone.utc),
