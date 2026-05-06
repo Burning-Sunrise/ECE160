@@ -14,7 +14,7 @@ class NightmareScreen:
     def __init__(self):
         self.ui = None
         self.entered = False
-        self.phase = "BATTLE"
+        self.phase = "INTRO"
         self.timer = 0
         self.player = None
         self.boss = None
@@ -59,13 +59,23 @@ class NightmareScreen:
         self.pulse_group = pygame.sprite.Group()
 
     def reset(self):
-        self.phase = "BATTLE"
+        self.phase = "INTRO"
         self.timer = 0
         if not self.assets_loaded:
             self._load_assets()
         self._new_battle()
+    
+    def _start_battle(self):
+        self.phase = "BATTLE"
+        self.timer = 0
+        self.boss.start_time = pygame.time.get_ticks()
 
     def handle_event(self, event):
+        if self.phase == "INTRO":
+            if event.type == pygame.KEYDOWN:
+                self._start_battle()
+            return
+        
         if self.phase != "BATTLE":
             return
         if event.type == pygame.KEYDOWN:
@@ -79,12 +89,14 @@ class NightmareScreen:
 
         self.timer += dt
 
-        if self.phase == "BATTLE":
+        if self.phase == "INTRO":
+            if self.timer > 4.0:
+                self._start_battle()
+
+        elif self.phase == "BATTLE":
             self._update_battle()
         elif self.phase == "DEATH":
-            if self.timer > 3.0:
-                self.entered = False
-                self.ui.change_screen("GAME_OVER")
+            pass
         elif self.phase == "VICTORY":
             if self.timer > 2.0:
                 game_state.add_money(500)
@@ -124,6 +136,19 @@ class NightmareScreen:
         if not self.entered:
             surface.fill((40, 0, 40))
             return
+        
+        if self.phase == "INTRO":
+            surface.fill((0, 0, 0))
+            font_big = pygame.font.SysFont("Arial", 70)
+            font_small = pygame.font.SysFont("Arial", 28)
+            txt1 = font_big.render("You feel awful tonight...", True, (200, 200, 200))
+            txt2 = font_small.render("Press any key to continue", True, (120, 120, 120))
+            rect1 = txt1.get_rect(center=(NIGHTMARE_WIDTH // 2, NIGHTMARE_HEIGHT // 2 - 30))
+            rect2 = txt2.get_rect(center=(NIGHTMARE_WIDTH // 2, NIGHTMARE_HEIGHT // 2 + 60))
+            surface.blit(txt1, rect1)
+            surface.blit(txt2, rect2)
+            return
+
 
         self._draw_battle(surface)
 

@@ -3,22 +3,32 @@ from game.interaction_zone import InteractionZone
 from game.player import Player
 from settings import GAME_WIDTH, GAME_HEIGHT
 
-DEBUG = True
+# ------------------------------------
+# Debug Toggles
+# ------------------------------------
+DEBUG_WALLS = False       # Show wall rectangles if true
+DEBUG_ZONES = True       # Show interaction zones
 
 
 class TradingFloorScreen:
     def __init__(self):
-        self.ui = None  # UIManager will assign this later
-        self.player = Player(200, 200)
+        self.ui = None
+        self.player = Player(250, 150)
 
         self.walls = []
         self.interaction_zones = []
         self.current_interaction = None
 
+        # Background image
+        self.background = pygame.transform.scale(
+            pygame.image.load("Sidney/src/assets/trading_floor/trading_floor.jpg").convert(),
+            (640, 360)
+        )
+
         self._build_test_room()
 
     # ------------------------------------
-    # Modular helper functions
+    # Helper functions
     # ------------------------------------
     def add_wall(self, x, y, w, h):
         self.walls.append(pygame.Rect(x, y, w, h))
@@ -29,23 +39,53 @@ class TradingFloorScreen:
         )
 
     # ------------------------------------
-    # Build the room
+    # Build the room ****** IMPORTANT WALL LAYOUTS ARE HERE
     # ------------------------------------
     def _build_outer_walls(self):
         thickness = 20
         w, h = GAME_WIDTH, GAME_HEIGHT
 
-        self.add_wall(0, 0, w, thickness)
-        self.add_wall(0, h - thickness, w, thickness)
-        self.add_wall(0, 0, thickness, h)
-        self.add_wall(w - thickness, 0, thickness, h)
+        self.add_wall(0, 0, w, thickness)              # Top
+        self.add_wall(0, h - thickness, w, thickness)  # Bottom
+        self.add_wall(0, 0, thickness, h)              # Left
+        self.add_wall(w - thickness, 0, thickness, h)  # Right
 
     def _build_inner_walls(self):
-        self.add_wall(200, 200, 400, 20)
-        self.add_wall(100, 100, 200, 20)
+        #tippy top
+        self.add_wall(0, 40, 1000, 20)
+        
+        # Top row, walls
+        
+        self.add_wall(245, 85, 150, 20)
+        self.add_wall(75, 85, 130, 20)
+        self.add_wall(437, 85, 140, 20)
+
+        #2nd row, walls
+        self.add_wall(245, 110, 150, 40)
+        self.add_wall(75, 110, 130, 40)
+        self.add_wall(437, 110, 140, 40)
+
+        #Vertical Walls
+        self.add_wall(55, 155, 20, 90)
+        self.add_wall(110, 155, 20, 90)
+        self.add_wall(520, 155, 20, 90)
+        self.add_wall(570, 155, 20, 90)
+
+        #4th row Walls
+        self.add_wall(55, 250, 128, 30)
+        self.add_wall(237, 250, 123, 30)
+        self.add_wall(415, 250, 140, 30)
+
+        #Bottom Row Walls
+        self.add_wall(45, 280, 150, 100)
+        self.add_wall(226, 280, 150, 100)
+        self.add_wall(406, 280, 156, 100)
 
     def _build_interaction_zones(self):
-        self.add_interaction_zone(150, 150, 40, 40, "terminal")
+        # Move this anywhere you want
+        self.add_interaction_zone(75, 110, 132, 45, "terminal")
+        self.add_interaction_zone(240, 110, 160, 45, "terminal")
+        self.add_interaction_zone(434, 110, 160, 45, "terminal")
 
     def _build_test_room(self):
         self._build_outer_walls()
@@ -66,22 +106,11 @@ class TradingFloorScreen:
     def update(self, dt, game_state):
         keys = pygame.key.get_pressed()
 
-        # Player movement
+        # Player movement + collision
         self.player.handle_input(keys)
         self.player.update(self.walls)
 
-        # ------------------------------------
-        # NEW DAY FIX
-        # ------------------------------------
-        # If trades reset, clear interaction state + prompt
-        if game_state.trades_today == 0:
-            self.current_interaction = None
-            if self.ui:
-                self.ui.clear_prompt()
-
-        # ------------------------------------
         # Interaction detection
-        # ------------------------------------
         self.current_interaction = None
         for zone in self.interaction_zones:
             if self.player.rect.colliderect(zone.rect):
@@ -101,16 +130,21 @@ class TradingFloorScreen:
     # Draw
     # ------------------------------------
     def draw(self, surface):
-        # Draw walls
-        for wall in self.walls:
-            pygame.draw.rect(surface, (100, 100, 100), wall)
 
-        # Draw interaction zones (debug)
-        if DEBUG:
+        # Background
+        surface.blit(self.background, (0, 0))
+
+        # Walls (debug only)
+        if DEBUG_WALLS:
+            for wall in self.walls:
+                pygame.draw.rect(surface, (100, 100, 100), wall, 2)
+
+        # Interaction zones (debug only)
+        if DEBUG_ZONES:
             for zone in self.interaction_zones:
                 pygame.draw.rect(surface, (0, 150, 255), zone.rect, 2)
 
-        # Draw player
+        # Player
         self.player.draw(surface)
 
     # ------------------------------------
@@ -120,9 +154,7 @@ class TradingFloorScreen:
         if not self.ui:
             return
 
-        # Clear the "Press E" prompt immediately
         self.ui.clear_prompt()
 
         if zone.type == "terminal":
             self.ui.state = "CONFIRM_TRADE"
-

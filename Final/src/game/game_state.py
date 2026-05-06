@@ -28,13 +28,9 @@ class GameState:
     def record_trade(self):
         """Call this when the player performs a trade."""
         self.trades_today += 1
-
         # Increase stress each trade
         self.add_stress(10)
-
-        # If out of trades, switch to night
-        if self.trades_today >= self.max_trades_per_day:
-            self.time_of_day = "NIGHT"
+        # Do NOT set time_of_day here anymore
 
     def reset_trades(self):
         """Reset trades at the start of a new day."""

@@ -148,12 +148,6 @@ class UIManager:
                     # Spend trade + stress
                     self.game_state.record_trade()
 
-                    # If NIGHT triggered
-                    if self.game_state.time_of_day == "NIGHT":
-                        self.change_screen("RECOVERY_ROOM")
-                        self.state = None
-                        return
-
                     # Open investment popup
                     self.invest_popup = InvestmentPopup(
                         self.screen, self.font, self.money
@@ -279,6 +273,13 @@ class UIManager:
         # Always update TradingSimScreen
         if self.current_screen == "TRADING_SIM":
             self.screens["TRADING_SIM"].update(dt, game_state)
+            if self.screens["TRADING_SIM"].state ==  "EXIT":
+                # Check if trades are finished 
+                if game_state.trades_today >= game_state.max_trades_per_day:
+                    game_state.time_of_day = "NIGHT"
+                    self.state = None
+                    self.change_screen("RECOVERY_ROOM")
+                    return
             return
 
         # Normal updates
@@ -291,7 +292,7 @@ class UIManager:
     def draw(self, surface):
         self.screens[self.current_screen].draw(surface)
 
-        # 梦魇战斗时不画框架的 HUD/暂停按钮
+
         if self.current_screen == "NIGHTMARE":
             return
 

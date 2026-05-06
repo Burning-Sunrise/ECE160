@@ -38,7 +38,7 @@ class RecoveryRoomScreen:
         self.entered = False
 
     def _reset(self):
-        """每次进入药房时重置状态"""
+
         self.timer = 0
         self.phase = "ENTER"
         self.choice = None

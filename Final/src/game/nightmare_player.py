@@ -8,30 +8,28 @@ ASSET_DIR = os.path.join(BASE_DIR, "assets")
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
-        # --- 1. 基础配置 ---
+        
         self.scale = 5
         self.orig_size = 64
         self.display_size = self.orig_size * self.scale  # 320x320
 
-        # --- Sprite Sheet ---
+        #sprite Sheet
         img_path = os.path.join(ASSET_DIR, "player", "player.png")
         try:
             self.sheet = pygame.image.load(img_path).convert_alpha()
         except Exception as e:
-            print(f"加载失败: {e}")
+            print(f"fail to load: {e}")
             self.sheet = pygame.Surface((64 * 17, 64 * 14))
 
         self.frame_counts = [8, 12, 7, 10, 17, 5, 5, 5, 7, 6, 6, 5, 5, 15]
         self.animations = self.load_all_animations()
 
-        # --- 3. 状态与动画 ---
         self.status = 'idle'
         self.frame_index = 0
         self.animation_speed = 0.15
         self.image = self.animations[self.status][0]
         self.flip = False
 
-        # --- 4. 物理 ---
         self.rect = pygame.Rect(x, y, 9 * self.scale, 18 * self.scale)
         self.direction = pygame.math.Vector2(0, 0)
         self.speed = 6
@@ -40,21 +38,17 @@ class Player(pygame.sprite.Sprite):
         self.jump_count = 0
         self.is_on_ground = False
 
-        # --- 5. 战斗属性 ---
         self.hp = 7
         self.is_attacking = False
         self.is_dashing = False
         self.dash_timer = 0
         self.damage_toggle = 1
 
-        # --- 6. 无敌 & 单次攻击命中标记 ---
+
         self.invincible = False
         self.invincible_timer = 0
-        self.attack_hit_done = False  # 当前一次攻击是否已击中过 boss
+        self.attack_hit_done = False  
 
-    # ----------------------------------------------------------
-    # 资源
-    # ----------------------------------------------------------
     def load_all_animations(self):
         actions = [
             'run', 'idle', 'dash', 'dashattack', 'whirlwind',
@@ -75,13 +69,10 @@ class Player(pygame.sprite.Sprite):
             all_anims[action] = frames
         return all_anims
 
-    # ----------------------------------------------------------
-    # 输入
-    # ----------------------------------------------------------
+
     def get_input(self):
         keys = pygame.key.get_pressed()
 
-        # 移动输入：冲刺(K)中和冲刺攻击中不响应；其他状态（包括普通攻击）都响应
         if not self.is_dashing and self.status != 'dashattack':
             if keys[pygame.K_d]:
                 self.direction.x = 1
@@ -92,14 +83,13 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.direction.x = 0
 
-            # 只有非攻击状态才用移动来切换 run/idle，否则会打断攻击动画
             if not self.is_attacking:
                 if self.direction.x != 0:
                     self.status = 'run'
                 elif self.is_on_ground:
                     self.status = 'idle'
 
-        # 冲刺 (K)
+
         if keys[pygame.K_k] and not self.is_dashing and not self.is_attacking:
             if self.dash_timer <= 0:
                 self.is_dashing = True
@@ -114,7 +104,7 @@ class Player(pygame.sprite.Sprite):
                 self.is_dashing = False
                 self.dash_timer = 0
                 self.status = 'dashattack'
-                self.direction.x = 0          # ← dashattack 期间钉住不动
+                self.direction.x = 0         
             elif keys[pygame.K_w]:
                 self.status = 'attack_up'
             elif keys[pygame.K_s]:
@@ -126,9 +116,7 @@ class Player(pygame.sprite.Sprite):
             self.frame_index = 0
             self.attack_hit_done = False
 
-    # ----------------------------------------------------------
-    # 物理
-    # ----------------------------------------------------------
+
     def apply_physics(self):
         self.direction.y += self.gravity
         self.rect.y += self.direction.y
@@ -145,7 +133,7 @@ class Player(pygame.sprite.Sprite):
             if self.dash_timer > 0:
                 self.dash_timer -= 1
 
-        # 地面（用 settings.GROUND_Y）
+
         if self.rect.bottom >= GROUND_Y:
             self.rect.bottom = GROUND_Y
             self.direction.y = 0
@@ -177,9 +165,6 @@ class Player(pygame.sprite.Sprite):
                 self.is_dashing = False
                 self.dash_timer = 0
 
-    # ----------------------------------------------------------
-    # 动作
-    # ----------------------------------------------------------
     def jump(self):
         if self.jump_count < 2:
             self.direction.y = self.jump_speed
@@ -203,9 +188,7 @@ class Player(pygame.sprite.Sprite):
             return pygame.Rect(x, self.rect.centery - 67, 165, 135)
         return None
 
-    # ----------------------------------------------------------
-    # 受伤
-    # ----------------------------------------------------------
+
     def take_damage(self):
         if self.invincible or self.status == 'death':
             return
@@ -220,9 +203,7 @@ class Player(pygame.sprite.Sprite):
             self.damage_toggle = 2 if self.damage_toggle == 1 else 1
         self.frame_index = 0
 
-    # ----------------------------------------------------------
-    # 动画
-    # ----------------------------------------------------------
+
     def animate(self):
         animation = self.animations[self.status]
         self.frame_index += self.animation_speed
@@ -242,9 +223,7 @@ class Player(pygame.sprite.Sprite):
         img = animation[int(self.frame_index)]
         self.image = pygame.transform.flip(img, self.flip, False)
 
-    # ----------------------------------------------------------
-    # 主动攻击命中检测（每帧从 main 调用）
-    # ----------------------------------------------------------
+  
     def check_hit_boss(self, boss):
         if self.attack_hit_done:
             return
@@ -254,13 +233,11 @@ class Player(pygame.sprite.Sprite):
                 boss.take_damage(1)
                 self.attack_hit_done = True
 
-    # ----------------------------------------------------------
-    # 渲染 & 主循环
-    # ----------------------------------------------------------
+  
     def draw(self, surface):
         draw_x = self.rect.centerx - self.display_size // 2
         draw_y = self.rect.bottom - self.display_size
-        # 无敌时让玩家闪烁
+
         if self.invincible and (self.invincible_timer // 4) % 2 == 0:
             return
         surface.blit(self.image, (draw_x, draw_y))
@@ -270,7 +247,7 @@ class Player(pygame.sprite.Sprite):
             self.get_input()
             self.apply_physics()
         self.animate()
-        # 无敌计时
+
         if self.invincible:
             self.invincible_timer -= 1
             if self.invincible_timer <= 0:

@@ -138,31 +138,20 @@ class UIManager:
                 if action == "yes":
                     self.clear_prompt()
 
-                    # Prevent negative trades
-                    if self.game_state.trades_today >= self.game_state.max_trades_per_day:
-                        self.game_state.time_of_day = "NIGHT"
-                        self.change_screen("RECOVERY_ROOM")
-                        self.state = None
-                        return
-
-                    # Spend trade + stress
+                    # Record the trade ONLY here
                     self.game_state.record_trade()
-
-                    # If NIGHT triggered
-                    if self.game_state.time_of_day == "NIGHT":
-                        self.change_screen("RECOVERY_ROOM")
-                        self.state = None
-                        return
 
                     # Open investment popup
                     self.invest_popup = InvestmentPopup(
                         self.screen, self.font, self.money
                     )
                     self.state = "INVEST"
+                    return
 
                 elif action == "no":
                     self.clear_prompt()
                     self.state = None
+                    return
 
             return
 
@@ -262,26 +251,35 @@ class UIManager:
         self.stress = game_state.stress
         self.max_stress = game_state.max_stress
 
-        # NIGHT triggers Recovery Room automatically
-        if game_state.time_of_day == "NIGHT" and self.current_screen not in ("RECOVERY_ROOM", "NIGHTMARE", "GAME_OVER"):
-            self.clear_prompt()
-            self.state = None
-            self.change_screen("RECOVERY_ROOM")
-            return
-
-        # Nightmare triggers immediately
+        # 1. NIGHTMARE CHECK FIRST
         if game_state.is_nightmare():
             self.clear_prompt()
             self.state = None
             self.change_screen("NIGHTMARE")
             return
 
-        # Always update TradingSimScreen
+        # 2. TRADING SIM ALWAYS UPDATES BEFORE NIGHT CHECK
         if self.current_screen == "TRADING_SIM":
-            self.screens["TRADING_SIM"].update(dt, game_state)
+            sim = self.screens["TRADING_SIM"]
+            sim.update(dt, game_state)
+
+            if sim.state == "EXIT":
+                if game_state.trades_today >= game_state.max_trades_per_day:
+                    game_state.time_of_day = "NIGHT"
+                    self.state = None
+                    self.change_screen("RECOVERY_ROOM")
+                    return
+
+            return  # prevents NIGHT from interrupting mini-game
+
+        # 3. NIGHT triggers Recovery Room automatically
+        if game_state.time_of_day == "NIGHT" and self.current_screen not in ("RECOVERY_ROOM", "NIGHTMARE", "GAME_OVER"):
+            self.clear_prompt()
+            self.state = None
+            self.change_screen("RECOVERY_ROOM")
             return
 
-        # Normal updates
+        # 4. Normal updates
         if self.state is None:
             self.screens[self.current_screen].update(dt, game_state)
 
@@ -330,13 +328,38 @@ class UIManager:
                          (self.pause_button_rect.x + 20, self.pause_button_rect.y + 24), 3)
 
     def _draw_hud(self, surface):
+        # Render text
         money_surf = self.font.render(f"Money: ${self.money}", True, (255, 255, 255))
         day_surf = self.font.render(f"Day: {self.day}", True, (255, 255, 255))
         actions_surf = self.font.render(f"Trades Left: {self.actions_left}", True, (255, 255, 255))
         stress_surf = self.font.render(f"Stress: {self.stress}/{self.max_stress}", True, (255, 255, 255))
 
-        surface.blit(money_surf, (20, 20))
-        surface.blit(day_surf, (20, 50))
-        surface.blit(actions_surf, (20, 80))
-        surface.blit(stress_surf, (20, 110))
+        text_surfaces = [money_surf, day_surf, actions_surf, stress_surf]
+
+        # Box padding + spacing
+        padding = 10
+        spacing = 5
+
+        # Compute box size
+        max_width = max(s.get_width() for s in text_surfaces)
+        total_height = sum(s.get_height() for s in text_surfaces) + spacing * (len(text_surfaces) - 1)
+
+        box_width = max_width + padding * 2
+        box_height = total_height + padding * 2
+
+        # Position in top-left
+        x = 20
+        y = 20
+
+        # Draw semi-transparent background
+        bg = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        bg.fill((0, 0, 0, 150))  # black with alpha
+        surface.blit(bg, (x, y))
+
+        # Draw text inside box
+        current_y = y + padding
+        for surf in text_surfaces:
+            surface.blit(surf, (x + padding, current_y))
+            current_y += surf.get_height() + spacing
+
 
