@@ -1,18 +1,18 @@
-# 全局参数
+
 WIDTH = 1280
 HEIGHT = 720
 FPS = 60
 
-# 地面 Y 坐标（脚底贴齐这里）
+
 GROUND_Y = 600
 
-# 物理
+
 GRAVITY = 0.8
 
-# 玩家
+
 PLAYER_SPEED = 6
 JUMP_POWER = -16
-PLAYER_INVINCIBLE_FRAMES = 60   # Invincibility frames
+PLAYER_INVINCIBLE_FRAMES = 60   
 
 # Boss
 BOSS_WALK_SPEED = 3
