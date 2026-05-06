@@ -87,6 +87,7 @@ class RecoveryRoomScreen:
 
         # RESULT
         elif self.phase == "RESULT":
+
             if not self.applied_result:
 
                 if self.choice == "TAKE":
@@ -99,14 +100,17 @@ class RecoveryRoomScreen:
                     self.result_text = "You skip the medication. Stress rises."
 
                 # Determine outcome
-            stress = game_state.stress
-            if stress >= game_state.max_stress:
-                self.outcome = "DEATH"
-            elif stress >= 60:
-                self.outcome = "NIGHTMARE"
-                self.result_text += " You feel awful tonight..."   
-            else:
-                self.outcome = "PEACEFUL"
+                stress = game_state.stress
+
+                if stress >= game_state.max_stress:
+                    self.outcome = "DEATH"
+
+                elif stress >= 60:
+                    self.outcome = "NIGHTMARE"
+                    self.result_text += " You feel awful tonight..."
+
+                else:
+                    self.outcome = "PEACEFUL"
 
                 self.applied_result = True
 
