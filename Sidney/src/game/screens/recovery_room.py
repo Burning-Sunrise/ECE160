@@ -1,4 +1,4 @@
-#Kira is doing the art and design for this one... I'm taking care of the logic
+#Kira is doing the art and design for this one... I'm taking care of the logic /// Logic complete
 # recovery_room.py
 import pygame
 import os
@@ -16,7 +16,7 @@ class RecoveryRoomScreen:
         self.choice = None
         self.applied_result = False
 
-        # Load art
+        # Load Kira's art
         self.doctor_open = pygame.image.load(
             os.path.join(ASSET_DIR, "pharmacy", "pharmacist_begin.png")
         ).convert_alpha()
@@ -93,7 +93,7 @@ class RecoveryRoomScreen:
 
                 self.applied_result = True
 
-        # FADE
+        # FADE     Fading transition after the transaction
         elif self.phase == "FADE":
             self.fade_alpha += self.fade_speed * dt
 

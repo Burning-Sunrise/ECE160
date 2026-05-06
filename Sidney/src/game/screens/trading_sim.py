@@ -22,7 +22,7 @@ class TradingSimScreen:
 
     def update(self, dt, game_state):
 
-        # dt is in SECONDS (0.016, 0.033, etc.)
+        # dt is in SECONDS
 
         # If already finished, do nothing
         if self.state == "EXIT":
