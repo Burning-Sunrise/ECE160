@@ -90,7 +90,7 @@ class RecoveryRoomScreen:
             if not self.applied_result:
 
                 if self.choice == "TAKE":
-                    game_state.subtract_money(800)
+                    game_state.subtract_money(200)
                     game_state.recover_stress(35)
                     self.result_text = "You take the medication and feel calmer."
 
@@ -146,7 +146,7 @@ class RecoveryRoomScreen:
 
         # Text
         if self.phase == "CHOICE":
-            t1 = font.render("1) Take medication (-$800, -35 stress)", True, (255, 255, 255))
+            t1 = font.render("1) Take medication (-$200, -35 stress)", True, (255, 255, 255))
             t2 = font.render("2) Skip medication (+20 stress)", True, (255, 255, 255))
             surface.blit(t1, (20, GAME_HEIGHT - 70))
             surface.blit(t2, (20, GAME_HEIGHT - 40))

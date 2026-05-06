@@ -4,7 +4,7 @@ from settings import PLAYER_SPEED, SCREEN_WIDTH, SCREEN_HEIGHT
 class Player:
     def __init__(self, x, y):
         # Player is a simple square for now
-        self.rect = pygame.Rect(x, y, 16, 16)
+        self.rect = pygame.Rect(x, y, 32, 32)
         self.color = (255, 255, 255)
 
         # Movement
