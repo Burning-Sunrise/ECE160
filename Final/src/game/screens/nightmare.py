@@ -75,6 +75,10 @@ class NightmareScreen:
             if event.type == pygame.KEYDOWN:
                 self._start_battle()
             return
+        if self.phase == "DEATH":
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                pygame.event.post(pygame.event.Event(pygame.QUIT))
+            return
         
         if self.phase != "BATTLE":
             return
@@ -161,6 +165,10 @@ class NightmareScreen:
             txt = font.render("You die", True, (200, 50, 50))
             rect = txt.get_rect(center=(NIGHTMARE_WIDTH // 2, NIGHTMARE_HEIGHT // 2))
             surface.blit(txt, rect)
+            hint_font = pygame.font.SysFont("Arial", 24)
+            hint = hint_font.render("Press Q to quit", True, (120, 120, 120))
+            hint_rect = hint.get_rect(center=(NIGHTMARE_WIDTH // 2, NIGHTMARE_HEIGHT // 2 + 120))
+            surface.blit(hint, hint_rect)
         elif self.phase == "VICTORY":
             overlay = pygame.Surface((NIGHTMARE_WIDTH, NIGHTMARE_HEIGHT))
             overlay.fill((0, 0, 0))

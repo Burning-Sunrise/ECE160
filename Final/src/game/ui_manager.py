@@ -1,6 +1,9 @@
+def update(self, dt, game_state):
+    print(f"[UI] screen={self.current_screen}, time={game_state.time_of_day}, day={game_state.day}, trades={game_state.trades_today}")
+    
+    self.game_state = game_state
 import os, sys
-print("CWD:", os.getcwd())
-print("PATH:", sys.path)
+
 
 import pygame
 from ui.pause import PauseMenu
@@ -8,11 +11,14 @@ from ui.menu import SettingsMenu
 from ui.confirm_trade import ConfirmTradePopup
 from ui.investment_popup import InvestmentPopup
 
+
 from game.screens.trading_floor import TradingFloorScreen
 from game.screens.trading_sim import TradingSimScreen
 from game.screens.recovery_room import RecoveryRoomScreen
 from game.screens.nightmare import NightmareScreen
 from game.screens.game_over import GameOverScreen
+from game.screens.ending import EndingScreen
+from game.screens.trading_panel import TradingPanelScreen
 
 
 class UIManager:
@@ -54,6 +60,8 @@ class UIManager:
             "RECOVERY_ROOM": RecoveryRoomScreen(),
             "NIGHTMARE": NightmareScreen(),
             "GAME_OVER": GameOverScreen(),
+            "TRADING_PANEL": TradingPanelScreen(),
+            "ENDING": EndingScreen(), 
         }
         self.current_screen = "TRADING_FLOOR"
         self.confirm_trade = ConfirmTradePopup(self.screen, self.font)
@@ -257,10 +265,21 @@ class UIManager:
         self.max_stress = game_state.max_stress
 
         # NIGHT triggers Recovery Room automatically
-        if game_state.time_of_day == "NIGHT" and self.current_screen not in ("RECOVERY_ROOM", "NIGHTMARE", "GAME_OVER"):
+        if game_state.time_of_day == "NIGHT" and self.current_screen not in (
+            "RECOVERY_ROOM",
+            "NIGHTMARE",
+            "GAME_OVER",
+            "ENDING"
+        ):
             self.clear_prompt()
             self.state = None
-            self.change_screen("RECOVERY_ROOM")
+
+            # Day 7 ending
+            if game_state.day >= 7:
+                self.change_screen("ENDING")
+            else:
+                self.change_screen("RECOVERY_ROOM")
+
             return
 
         # Nightmare triggers immediately
@@ -293,7 +312,7 @@ class UIManager:
         self.screens[self.current_screen].draw(surface)
 
 
-        if self.current_screen == "NIGHTMARE":
+        if self.current_screen in ("NIGHTMARE", "TRADING_PANEL", "ENDING"):
             return
 
         if self.state is None:

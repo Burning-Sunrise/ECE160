@@ -1,11 +1,15 @@
 import pygame
 import sys
 
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 from game.ui_manager import UIManager
 from game.game_state import GameState
 from settings import (
     SCREEN_WIDTH, SCREEN_HEIGHT, FULLSCREEN, COLOR_BG, FPS,
     GAME_WIDTH, GAME_HEIGHT, NIGHTMARE_WIDTH, NIGHTMARE_HEIGHT,
+    TRADING_PANEL_WIDTH, TRADING_PANEL_HEIGHT,   
 )
 
 
@@ -24,6 +28,7 @@ def main():
     # Internal surfaces
     game_surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))                # 640x360 normal screens
     nightmare_surface = pygame.Surface((NIGHTMARE_WIDTH, NIGHTMARE_HEIGHT)) # 1280x720 boss fight
+    trading_panel_surface = pygame.Surface((TRADING_PANEL_WIDTH, TRADING_PANEL_HEIGHT))
 
     # Temporary font
     font = pygame.font.SysFont("Arial", 20)
@@ -56,10 +61,16 @@ def main():
             nightmare_surface.fill(COLOR_BG)
             ui.draw(nightmare_surface)
             scaled = pygame.transform.scale(nightmare_surface, screen.get_size())
+        elif ui.current_screen == "TRADING_PANEL":                                   
+            trading_panel_surface.fill(COLOR_BG)
+            ui.draw(trading_panel_surface)
+            scaled = pygame.transform.scale(trading_panel_surface, screen.get_size())
         else:
             game_surface.fill(COLOR_BG)
             ui.draw(game_surface)
             scaled = pygame.transform.scale(game_surface, screen.get_size())
+
+
 
         screen.blit(scaled, (0, 0))
         pygame.display.flip()

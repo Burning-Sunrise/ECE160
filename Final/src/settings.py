@@ -37,3 +37,7 @@ COLOR_BLUE = (50, 50, 200)
 # Player Settings
 PLAYER_SPEED = 2
 PLAYER_INVINCIBLE_FRAMES = 60
+
+# Trading panel resolution (Lexie's stock interface)
+TRADING_PANEL_WIDTH = 1000
+TRADING_PANEL_HEIGHT = 700

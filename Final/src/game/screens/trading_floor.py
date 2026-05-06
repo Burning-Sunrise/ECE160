@@ -159,6 +159,6 @@ class TradingFloorScreen:
 
         if zone.type == "terminal":
             # Game 1 uses this state to open its trade UI
-            self.ui.state = "CONFIRM_TRADE"
+            self.ui.change_screen("TRADING_PANEL")
 
 
