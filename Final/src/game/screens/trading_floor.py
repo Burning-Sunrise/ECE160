@@ -66,7 +66,7 @@ class TradingFloorScreen:
     def update(self, dt, game_state):
         keys = pygame.key.get_pressed()
 
-        # Player movement
+        #Player movement
         self.player.handle_input(keys)
         self.player.update(self.walls)
 

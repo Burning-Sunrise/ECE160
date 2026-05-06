@@ -55,7 +55,7 @@ class UIManager:
             "NIGHTMARE": NightmareScreen(),
             "GAME_OVER": GameOverScreen(),
         }
-        self.current_screen = "TRADING_FLOOR"
+        self.current_screen = "TRADING_SIM"
         self.confirm_trade = ConfirmTradePopup(self.screen, self.font)
 
         # Give each screen access to UIManager
