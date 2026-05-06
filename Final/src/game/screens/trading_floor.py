@@ -20,7 +20,7 @@ class TradingFloorScreen:
         # Optional background image (remove if Game 1 doesn't use backgrounds)
         try:
             self.background = pygame.transform.scale(
-                pygame.image.load("Final/src/assets/trading_floor/trading_floor.jpg").convert(),
+                pygame.image.load("assets/trading_floor/trading_floor.jpg").convert(),
                 (GAME_WIDTH, GAME_HEIGHT)
             )
         except:
