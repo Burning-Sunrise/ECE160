@@ -8,9 +8,7 @@ from model import MarketLSTM
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Training on:", DEVICE)
 
-# ---------------------------------------------------------
 # DATASET
-# ---------------------------------------------------------
 class CandleDataset(Dataset):
     def __init__(self, path):
         with open(path, "r") as f:
@@ -68,9 +66,7 @@ class CandleDataset(Dataset):
         return torch.tensor(X, dtype=torch.float32), torch.tensor(Y, dtype=torch.float32)
 
 
-# ---------------------------------------------------------
 # TRAINING LOOP
-# ---------------------------------------------------------
 def train():
     dataset = CandleDataset("training_data.json")
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
@@ -102,9 +98,6 @@ def train():
     torch.save(model.state_dict(), "model.pth")
     print("Training complete. Saved model.pth")
 
-
-# ---------------------------------------------------------
 # ENTRY POINT
-# ---------------------------------------------------------
 if __name__ == "__main__":
     train()

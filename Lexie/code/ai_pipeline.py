@@ -13,9 +13,7 @@ class AIPipeline:
             print("WARNING: model.pth not found — using untrained model.")
         self.model.eval()
 
-    # ---------------------------------------------------------
     # 8‑FEATURE ENCODER (NO VOLUME REQUIRED)
-    # ---------------------------------------------------------
     def encode(self, seq):
         X = []
         for c in seq:
@@ -42,9 +40,7 @@ class AIPipeline:
 
         return torch.tensor([X], dtype=torch.float32)
 
-    # ---------------------------------------------------------
     # Predict next 5 candles
-    # ---------------------------------------------------------
     def predict(self, seq):
         seq = seq[-50:]  # last 50 candles
         X = self.encode(seq)

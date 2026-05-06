@@ -102,7 +102,7 @@ class TradingFloor:
             pygame.draw.line(self.screen, GRID, (0, i + frame_offset_y), (WIDTH, i + frame_offset_y))
 
         # REAL CANDLES — shift left to make room for ghost candles
-        x = WIDTH - 350   # <-- moved left so ghost candles fit
+        x = WIDTH - 350   # -- moved left so ghost candles fit
 
         for c in reversed(visible):
             color = GREEN if c["close"] >= c["open"] else RED
