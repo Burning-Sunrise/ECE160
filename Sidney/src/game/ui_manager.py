@@ -1,6 +1,6 @@
 import os, sys
 print("CWD:", os.getcwd())
-print("PATH:", sys.path)
+print("PATH:", sys.path)  ###Temp fix, works and will be submitted in final... AI aided in identifying weaknesses and debugging
 
 import pygame
 from ui.pause import PauseMenu
@@ -78,7 +78,7 @@ class UIManager:
         self.pause_button_rect.topright = (w - 8, 8)
 
     # ------------------------------------------------
-    # Mouse Scaling Helper
+    # Mouse Scaling
     # ------------------------------------------------
     def _scale_mouse(self, pos):
         window_w, window_h = pygame.display.get_surface().get_size()
@@ -251,14 +251,14 @@ class UIManager:
         self.stress = game_state.stress
         self.max_stress = game_state.max_stress
 
-        # 1. NIGHTMARE CHECK FIRST
+        # Nightmare checking first
         if game_state.is_nightmare():
             self.clear_prompt()
             self.state = None
             self.change_screen("NIGHTMARE")
             return
 
-        # 2. TRADING SIM ALWAYS UPDATES BEFORE NIGHT CHECK
+        # Trade sim update before NIGHT check
         if self.current_screen == "TRADING_SIM":
             sim = self.screens["TRADING_SIM"]
             sim.update(dt, game_state)
@@ -270,16 +270,16 @@ class UIManager:
                     self.change_screen("RECOVERY_ROOM")
                     return
 
-            return  # prevents NIGHT from interrupting mini-game
+            return  # prevents NIGHT from interrupting stand in for Lexie's code
 
-        # 3. NIGHT triggers Recovery Room automatically
+        # NIGHT triggers RecoveryRoom (Pharmacy) automatically
         if game_state.time_of_day == "NIGHT" and self.current_screen not in ("RECOVERY_ROOM", "NIGHTMARE", "GAME_OVER"):
             self.clear_prompt()
             self.state = None
             self.change_screen("RECOVERY_ROOM")
             return
 
-        # 4. Normal updates
+        # Normal updates
         if self.state is None:
             self.screens[self.current_screen].update(dt, game_state)
 
@@ -327,7 +327,7 @@ class UIManager:
                          (self.pause_button_rect.x + 20, self.pause_button_rect.y + 8),
                          (self.pause_button_rect.x + 20, self.pause_button_rect.y + 24), 3)
 
-    def _draw_hud(self, surface):
+    def _draw_hud(self, surface):    #drawing the output to surface (internal resolution)
         # Render text
         money_surf = self.font.render(f"Money: ${self.money}", True, (255, 255, 255))
         day_surf = self.font.render(f"Day: {self.day}", True, (255, 255, 255))
@@ -361,5 +361,4 @@ class UIManager:
         for surf in text_surfaces:
             surface.blit(surf, (x + padding, current_y))
             current_y += surf.get_height() + spacing
-
 

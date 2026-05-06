@@ -5,3 +5,4 @@ class InteractionZone:
         self.rect = pygame.Rect(x, y, w, h)
         self.type = zone_type
         self.data = data or {}
+#dummy text, Ui Manager calls when necessary

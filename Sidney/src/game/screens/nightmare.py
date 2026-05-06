@@ -1,4 +1,4 @@
-## Kira's work goes here.... This is a temporary Stub
+## Kira's work goes here.... This is a temporary Stub 
 class NightmareScreen:
     def __init__(self):
         self.ui = None

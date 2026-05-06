@@ -1,4 +1,4 @@
-#game over, will add other screens etc
+#game over, will add other screens etc --- bugs prevented manifestation
 class GameOverScreen:
     def __init__(self):
         self.ui = None

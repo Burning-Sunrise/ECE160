@@ -7,7 +7,7 @@ from settings import GAME_WIDTH, GAME_HEIGHT
 # Debug Toggles
 # ------------------------------------
 DEBUG_WALLS = False       # Show wall rectangles if true
-DEBUG_ZONES = True       # Show interaction zones
+DEBUG_ZONES = True       # Show interaction zones (otherwise unplayable as user wouldn't know where to interact KEEP TRUE)
 
 
 class TradingFloorScreen:
@@ -51,7 +51,8 @@ class TradingFloorScreen:
         self.add_wall(w - thickness, 0, thickness, h)  # Right
 
     def _build_inner_walls(self):
-        #tippy top
+        #tippy top Flag? obstruct entrance to background
+
         self.add_wall(0, 40, 1000, 20)
         
         # Top row, walls
@@ -82,7 +83,7 @@ class TradingFloorScreen:
         self.add_wall(406, 280, 156, 100)
 
     def _build_interaction_zones(self):
-        # Move this anywhere you want
+        # interactions on 3 benches
         self.add_interaction_zone(75, 110, 132, 45, "terminal")
         self.add_interaction_zone(240, 110, 160, 45, "terminal")
         self.add_interaction_zone(434, 110, 160, 45, "terminal")

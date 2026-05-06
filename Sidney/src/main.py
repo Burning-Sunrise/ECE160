@@ -22,7 +22,7 @@ def main():
     pygame.display.set_caption("Dr. Wallstreet")
     clock = pygame.time.Clock()
 
-    # Internal game surface (for pixel scaling)
+    # Internal game surface (for pixel scaling) SUPER IMPORTANT
     game_surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
 
     # Temporary font

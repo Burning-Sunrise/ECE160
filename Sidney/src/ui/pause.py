@@ -1,5 +1,5 @@
 import pygame
-
+# drawing and design of pause button (simple)
 class PauseMenu:
     def __init__(self, screen, font):
         self.screen = screen
