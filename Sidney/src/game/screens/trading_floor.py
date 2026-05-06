@@ -21,7 +21,7 @@ class TradingFloorScreen:
 
         # Background image
         self.background = pygame.transform.scale(
-            pygame.image.load("Sidney/src/assets/trading_floor/trading_floor.jpg").convert(),
+            pygame.image.load("assets/trading_floor/trading_floor.jpg").convert(),
             (640, 360)
         )
 

@@ -14,8 +14,6 @@ def handle_input(floor):
                 pygame.quit()
                 sys.exit()
 
-            mods = pygame.key.get_mods()
-            shift = mods & pygame.KMOD_SHIFT
 
             # Switch symbols
             if pygame.K_1 <= event.key <= pygame.K_5:
@@ -28,7 +26,7 @@ def handle_input(floor):
             # BUY
             #buys 2 units of current symbol
             #uses weighted average entry price if already holding
-            if event.key == pygame.K_b and shift:
+            if event.key == pygame.K_b:
                 sym = floor.current_symbol
                 price = floor.current_price[sym]
                 units = 2
@@ -53,7 +51,7 @@ def handle_input(floor):
 
             # SELL
             #removes current position
-            if event.key == pygame.K_s and shift:
+            if event.key == pygame.K_s:
                 sym = floor.current_symbol
                 if sym in floor.position:
                     entry = floor.position[sym]["entry"]
@@ -67,7 +65,7 @@ def handle_input(floor):
             # INSIDER TERMINAL
             #activate prediciton 
             #user pays 50 to see future candles
-            if event.key == pygame.K_i and shift:
+            if event.key == pygame.K_i:
                 if floor.insider_cooldown == 0 and not floor.insider_active:
                     if floor.portfolio >= floor.insider_cost:
 

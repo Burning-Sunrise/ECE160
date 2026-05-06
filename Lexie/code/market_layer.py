@@ -10,7 +10,7 @@ class MarketLayer:
         if use_real_data:
             self._fetch_initial_data()
         else:
-            # synthetic mode: start with empty lists
+            # synthetic mode: astart with empty lists
             for sym in self.symbols:
                 self.data[sym] = []
 
